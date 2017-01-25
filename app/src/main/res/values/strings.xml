@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">My Todo</string>
-    <string name="button">Add Item</string>
-    <string name="name">Enter a new item</string>
+    <string name="btn_add">Add Item</string>
+    <string name="edit_text_hint">Enter a new item</string>
+    <string name="text_view_title">Edit item below:</string>
+    <string name="btn_save">Save</string>
 </resources>
