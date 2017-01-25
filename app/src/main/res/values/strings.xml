@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">My Todo</string>
+    <string name="button">Add Item</string>
+    <string name="name">Enter a new item</string>
+</resources>
