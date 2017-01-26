@@ -21,22 +21,30 @@
         android:text="@string/btn_add"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:onClick="onAddItem"
+        android:layout_above="@+id/etNewItem"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:onClick="onAddItem"/>
+        android:layout_alignParentEnd="true" />
 
     <EditText
         android:id="@+id/etNewItem"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textCapSentences|textMultiLine"
         android:hint="@string/edit_text_hint"
         android:ems="10"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/spinPriority"
+        android:layout_above="@+id/etNewItem"
+        android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_toLeftOf="@+id/btnAddItem"
-        android:layout_toStartOf="@+id/btnAddItem" />
+        android:layout_marginBottom="11dp" />
+
 
 </RelativeLayout>

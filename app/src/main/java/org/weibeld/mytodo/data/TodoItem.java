@@ -8,25 +8,27 @@ import java.io.Serializable;
  */
 public class TodoItem implements Serializable {
 
-    public static final String PRIORITY_LOW = "low";
-    public static final String PRIORITY_MEDIUM = "medium";
-    public static final String PRIORITY_HIGH = "high";
-
     public Long _id;  // Required in all Cupboard models
     public String text = "";
-    public String priority = PRIORITY_HIGH;
+    public int priority = 0;
 
     public TodoItem() {
     }
 
-    public TodoItem(String text, String priority) {
-        this.text = text;
-        this.priority = priority;
-    }
-
     @Override
     public String toString() {
-        return text + " | " + priority;
+        switch (priority) {
+            case 0:
+                return text;
+            case 1:
+                return text + " | H";
+            case 2:
+                return text + " | M";
+            case 3:
+                return text + " | L";
+            default:
+                return text;
+        }
     }
 
 }
