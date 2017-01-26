@@ -7,6 +7,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
+import org.weibeld.mytodo.data.TodoItem;
+
 public class EditActivity extends AppCompatActivity {
 
     private final String LOG_TAG = EditActivity.class.getSimpleName();
@@ -16,18 +18,22 @@ public class EditActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit);
 
+        final TodoItem item = (TodoItem) getIntent().getSerializableExtra(MainActivity.EXTRA_CODE_ITEM);
+        final int position = getIntent().getIntExtra(MainActivity.EXTRA_CODE_ITEM_POS, 0);
+
         final EditText editText = (EditText) findViewById(R.id.etEditItem);
-        editText.setText(getIntent().getStringExtra(MainActivity.EXTRA_CODE_ITEM_TEXT));
-        // Set cursor to end of text
-        editText.setSelection(editText.getText().length());
+        editText.setText(item.text);
+        editText.setSelection(editText.getText().length());  // Set cursor to end of text
 
         Button saveButton = (Button) findViewById(R.id.btnEditSave);
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Update item and send it back to the MainActivity
+                item.text = editText.getText().toString();
                 Intent result = new Intent();
-                result.putExtra(MainActivity.EXTRA_CODE_ITEM_POS, getIntent().getIntExtra(MainActivity.EXTRA_CODE_ITEM_POS, 0));
-                result.putExtra(MainActivity.EXTRA_CODE_ITEM_TEXT, editText.getText().toString());
+                result.putExtra(MainActivity.EXTRA_CODE_ITEM, item);
+                result.putExtra(MainActivity.EXTRA_CODE_ITEM_POS, position);
                 setResult(RESULT_OK, result);
                 finish();
             }
