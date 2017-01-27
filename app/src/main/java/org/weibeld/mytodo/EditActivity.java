@@ -24,7 +24,7 @@ public class EditActivity extends AppCompatActivity {
         final int position = getIntent().getIntExtra(MainActivity.EXTRA_CODE_ITEM_POS, 0);
 
         final Spinner spinner = (Spinner) findViewById(R.id.spinPriority);
-        ArrayAdapter<CharSequence> spinAdapter = ArrayAdapter.createFromResource(this, R.array.priority_array, android.R.layout.simple_spinner_item);
+        ArrayAdapter<CharSequence> spinAdapter = ArrayAdapter.createFromResource(this, R.array.priority, android.R.layout.simple_spinner_item);
         spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(spinAdapter);
         spinner.setSelection(item.priority);

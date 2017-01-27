@@ -40,17 +40,27 @@ public class MainActivity extends AppCompatActivity {
     ListView mListView;
     SQLiteDatabase mDb;
 
-    Spinner mSpinner;
+    Spinner mSpinPrior;
+    Spinner mSpinDate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mSpinner = (Spinner) findViewById(R.id.spinPriority);
-        ArrayAdapter<CharSequence> spinAdapter = ArrayAdapter.createFromResource(this, R.array.priority_array, android.R.layout.simple_spinner_item);
-        spinAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSpinner.setAdapter(spinAdapter);
+
+        ArrayAdapter<CharSequence> adapter;
+        // Priority spinner
+        mSpinPrior = (Spinner) findViewById(R.id.spinPriority);
+        adapter = ArrayAdapter.createFromResource(this, R.array.priority, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mSpinPrior.setAdapter(adapter);
+
+        // Date spinner
+        mSpinDate = (Spinner) findViewById(R.id.spinDate);
+        adapter = ArrayAdapter.createFromResource(this, R.array.date, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mSpinDate.setAdapter(adapter);
 
         mDb = (new TodoDatabaseHelper(this)).getWritableDatabase();
 
@@ -103,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
         String text = editText.getText().toString();
         TodoItem item = new TodoItem();
         item.text = text;
-        item.priority = mSpinner.getSelectedItemPosition();
+        item.priority = mSpinPrior.getSelectedItemPosition();
         cupboard().withDatabase(mDb).put(item);  // Add item to database
         mItemsAdapter.add(item);  // Add item to ArrayList
         mItemsAdapter.notifyDataSetChanged();
