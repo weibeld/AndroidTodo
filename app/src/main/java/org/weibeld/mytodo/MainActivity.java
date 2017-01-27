@@ -1,16 +1,22 @@
 package org.weibeld.mytodo;
 
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
+import android.widget.TextView;
 
 import org.weibeld.mytodo.data.TodoDatabaseHelper;
 import org.weibeld.mytodo.data.TodoItem;
@@ -30,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     static final String EXTRA_CODE_ITEM = "item";
 
     ArrayList<TodoItem> mItems;
-    ArrayAdapter<TodoItem> mItemsAdapter;
+    TodoItemAdapter mItemsAdapter;
     ListView mListView;
     SQLiteDatabase mDb;
 
@@ -50,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
         mListView = (ListView) findViewById(R.id.lvItems);
         readItems();  // Initialises 'mItems'
-        mItemsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, mItems);
+        mItemsAdapter = new TodoItemAdapter(this, mItems);
         mListView.setAdapter(mItemsAdapter);
         setupListViewListener();
     }
@@ -113,6 +119,50 @@ public class MainActivity extends AppCompatActivity {
             for (TodoItem item : iter) mItems.add(item);
         } finally {
             cursor.close();
+        }
+    }
+
+
+    /**
+     * Custom ArrayAdapter for displaying an item in the ListView.
+     */
+    public static class TodoItemAdapter extends ArrayAdapter<TodoItem> {
+
+        public TodoItemAdapter(Context context, ArrayList<TodoItem> items) {
+            super(context, 0, items);
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            TodoItem item = getItem(position);
+            if (convertView == null) {
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_todo, parent, false);
+            }
+            TextView tvText = (TextView) convertView.findViewById(R.id.tvText);
+            TextView tvPriority = (TextView) convertView.findViewById(R.id.tvPriority);
+
+            tvText.setText(item.text);
+            switch (item.priority) {
+                case 0:
+                    tvPriority.setText("");
+                    break;
+                case 1:
+                    tvPriority.setText("H");
+                    tvPriority.setTextColor(Color.RED);
+                    break;
+                case 2:
+                    tvPriority.setText("M");
+                    tvPriority.setTextColor(Color.parseColor("#FDE541"));  // Readable yellow
+                    break;
+                case 3:
+                    tvPriority.setText("L");
+                    tvPriority.setTextColor(Color.GREEN);
+                    break;
+                default:
+                    tvPriority.setText("");
+            }
+            return convertView;
         }
     }
 }
