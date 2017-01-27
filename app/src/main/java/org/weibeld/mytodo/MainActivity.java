@@ -1,6 +1,10 @@
 package org.weibeld.mytodo;
 
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -13,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
@@ -22,10 +27,13 @@ import org.weibeld.mytodo.data.TodoDatabaseHelper;
 import org.weibeld.mytodo.data.TodoItem;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 
 import nl.qbusict.cupboard.QueryResultIterable;
 
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
+import static org.weibeld.mytodo.R.array.date;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -35,13 +43,17 @@ public class MainActivity extends AppCompatActivity {
     static final String EXTRA_CODE_ITEM_POS = "position";
     static final String EXTRA_CODE_ITEM = "item";
 
+    SQLiteDatabase mDb;
+
     ArrayList<TodoItem> mItems;
     TodoItemAdapter mItemsAdapter;
     ListView mListView;
-    SQLiteDatabase mDb;
 
     Spinner mSpinPrior;
+    ArrayAdapter<CharSequence> mSpinPriorAdapter;
     Spinner mSpinDate;
+    ArrayAdapter<CharSequence> mSpinDateAdapter;
+    ArrayList<String> mSpinDateItems;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,18 +61,39 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-        ArrayAdapter<CharSequence> adapter;
-        // Priority spinner
+        // Priority spinner (read selected value in onAdditem method)
         mSpinPrior = (Spinner) findViewById(R.id.spinPriority);
-        adapter = ArrayAdapter.createFromResource(this, R.array.priority, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSpinPrior.setAdapter(adapter);
+        mSpinPriorAdapter = ArrayAdapter.createFromResource(this, R.array.priority, android.R.layout.simple_spinner_item);
+        mSpinPriorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mSpinPrior.setAdapter(mSpinPriorAdapter);
 
-        // Date spinner
+        // Date spinner (read selected value in onAdditem method)
         mSpinDate = (Spinner) findViewById(R.id.spinDate);
-        adapter = ArrayAdapter.createFromResource(this, R.array.date, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        mSpinDate.setAdapter(adapter);
+        mSpinDateItems = new ArrayList<>(Arrays.asList(getResources().getStringArray(date)));
+        mSpinDateAdapter = new ArrayAdapter(this, android.R.layout.simple_spinner_item, mSpinDateItems);
+        mSpinDateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mSpinDate.setAdapter(mSpinDateAdapter);
+        mSpinDate.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                // "None" selected: remove the dynamically added date item if present
+                if (position == 0) {
+                    if (mSpinDateItems.size() > 2) {
+                        mSpinDateItems.remove(2);
+                        mSpinDateAdapter.notifyDataSetChanged();
+                    }
+                }
+                // "Select..." selected: launch the date picker dialog
+                if (position == 1) {
+                    DialogFragment datePicker = new DatePickerFragment();
+                    datePicker.show(getFragmentManager(), "datePicker");
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
 
         mDb = (new TodoDatabaseHelper(this)).getWritableDatabase();
 
@@ -174,6 +207,52 @@ public class MainActivity extends AppCompatActivity {
                     tvPriority.setText("");
             }
             return convertView;
+        }
+    }
+
+    /**
+     * Created by dw on 27/01/17.
+     */
+    public static class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
+
+        private final String LOG_TAG = DatePickerFragment.class.getSimpleName();
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Use the current date as the default date in the picker
+            // TODO: if a date has been previously selected, set this date as the default date
+            final Calendar c = Calendar.getInstance();
+            int year = c.get(Calendar.YEAR);
+            int month = c.get(Calendar.MONTH);
+            int day = c.get(Calendar.DAY_OF_MONTH);
+            return new DatePickerDialog(getActivity(), this, year, month, day);
+        }
+
+        // Called if the user selected a date from the date picker dialog
+        @Override
+        public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
+            month = month + 1;  // Months are numbered 0-11
+            year = year % 100;  // Keep only two-digit year to use less space
+            String date = "Due " + dayOfMonth + "/" + month + "/" + year;
+            MainActivity a = (MainActivity) getActivity();
+            // If a date has been selected before, replace it in the spinner, else add the new date
+            if (a.mSpinDateItems.size() > 2)
+                a.mSpinDateItems.set(2, date);
+            else
+                a.mSpinDateItems.add(date);
+            a.mSpinDateAdapter.notifyDataSetChanged();
+            a.mSpinDate.setSelection(2);
+        }
+
+        // Called if the user cancelled the date picker dialog
+        @Override
+        public void onCancel(DialogInterface dialog) {
+            MainActivity a = (MainActivity) getActivity();
+            // Set the selected item away from the currently selected "Select..." item
+            if (a.mSpinDateItems.size() > 2)
+                a.mSpinDate.setSelection(2);
+            else
+                a.mSpinDate.setSelection(0);
         }
     }
 }
