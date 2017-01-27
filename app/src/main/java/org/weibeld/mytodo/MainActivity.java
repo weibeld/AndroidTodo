@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
         mItemsAdapter.add(item);  // Add item to ArrayList
         mItemsAdapter.notifyDataSetChanged();
         editText.setText("");
+        mListView.setSelection(mItemsAdapter.getCount() - 1);
     }
 
     // Initialise the 'mItems' ArrayList with all the items in the database

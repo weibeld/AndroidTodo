@@ -24,7 +24,9 @@
         android:onClick="onAddItem"
         android:layout_above="@+id/etNewItem"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:background="@android:color/transparent"
+        android:textColor="@color/colorPrimary" />
 
     <EditText
         android:id="@+id/etNewItem"
