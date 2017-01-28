@@ -23,10 +23,12 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.weibeld.mytodo.data.TodoDatabaseHelper;
 import org.weibeld.mytodo.data.TodoItem;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -145,10 +147,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Add a new item to the database and to the ArrayList
-    public void onAddItem(View view) {
+    public void onAddItem(View view) throws Exception {
+        EditText editText = (EditText) findViewById(R.id.etNewItem);
+        if (editText.length() == 0) {
+            Toast.makeText(this, R.string.toast_enter_text, Toast.LENGTH_SHORT).show();
+            return;
+        }
         // Create a new TodoItem based on the information in the input fields
         TodoItem item = new TodoItem();
-        EditText editText = (EditText) findViewById(R.id.etNewItem);
         item.text =  editText.getText().toString();;
         item.priority = mSpinPrior.getSelectedItemPosition();
         switch(mSpinDate.getSelectedItemPosition()) {
@@ -157,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
                 item.date = -1;
                 break;
             case 2:
-                item.date = parseDate((String) mSpinPrior.getSelectedItem());
+                item.date = parseDate((String) mSpinDate.getSelectedItem());
                 break;
             default:
                 item.date = -1;
@@ -166,27 +172,30 @@ public class MainActivity extends AppCompatActivity {
         cupboard().withDatabase(mDb).put(item);
         mItemsAdapter.add(item);
         mItemsAdapter.notifyDataSetChanged();
+        // Reset input fields
         editText.setText("");
+        mSpinPrior.setSelection(0);
+        if (mSpinDateItems.size() > 2) {
+            mSpinDateItems.remove(2);
+            mSpinDateAdapter.notifyDataSetChanged();
+        }
+        mSpinDate.setSelection(0);
         // Scroll to end of list
         mListView.setSelection(mItemsAdapter.getCount() - 1);
     }
 
     // Parse a string containing a "dd/mm/yy" date and return the UNIX timestamp (ms) of this date
-    private long parseDate(String dateStr) {
+    private long parseDate(String dateStr) throws Exception {
         Pattern pattern = Pattern.compile("(\\d\\d?)/(\\d\\d?)/(\\d\\d?)");
         Matcher matcher = pattern.matcher(dateStr);
-        if (matcher.find()) {
-            int day = Integer.parseInt(matcher.group(1));
-            int month = Integer.parseInt(matcher.group(2)) + 1;
-            int year = Integer.parseInt(matcher.group(3)) + 2000;
-            GregorianCalendar date = new GregorianCalendar();
-            date.set(year, month, day);
-            return date.getTimeInMillis();
-        }
-        else {
-            Log.e(LOG_TAG, "Invalid date format in string: " + dateStr);
-            return -1;
-        }
+        if (!matcher.find())
+            throw new Exception("Invalid date string: " + dateStr);
+        int day = Integer.parseInt(matcher.group(1));
+        int month = Integer.parseInt(matcher.group(2)) - 1;
+        int year = Integer.parseInt(matcher.group(3)) + 2000;
+        GregorianCalendar date = new GregorianCalendar();
+        date.set(year, month, day);
+        return date.getTimeInMillis();
     }
 
     // Initialise the 'mItems' ArrayList with all the items in the database
@@ -207,6 +216,8 @@ public class MainActivity extends AppCompatActivity {
      */
     public static class TodoItemAdapter extends ArrayAdapter<TodoItem> {
 
+        private final String LOG_TAG = TodoItemAdapter.class.getSimpleName();
+
         public TodoItemAdapter(Context context, ArrayList<TodoItem> items) {
             super(context, 0, items);
         }
@@ -220,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
             }
             TextView tvText = (TextView) convertView.findViewById(R.id.tvText);
             TextView tvPriority = (TextView) convertView.findViewById(R.id.tvPriority);
+            TextView tvDate = (TextView) convertView.findViewById(R.id.tvDate);
 
             tvText.setText(item.text);
             switch (item.priority) {
@@ -227,27 +239,41 @@ public class MainActivity extends AppCompatActivity {
                     tvPriority.setText("");
                     break;
                 case 1:
-                    tvPriority.setText("H");
+                    tvPriority.setText(R.string.priority_high);
                     tvPriority.setTextColor(Color.RED);
                     break;
                 case 2:
-                    tvPriority.setText("M");
+                    tvPriority.setText(R.string.priority_medium);
                     tvPriority.setTextColor(Color.parseColor("#FDE541"));  // Readable yellow
                     break;
                 case 3:
-                    tvPriority.setText("L");
+                    tvPriority.setText(R.string.priority_low);
                     tvPriority.setTextColor(Color.GREEN);
                     break;
                 default:
                     tvPriority.setText("");
+            }
+
+            Log.v(LOG_TAG, "item.date = " + item.date);
+            if (item.date == -1)
+                tvDate.setText("");
+            else {
+                Log.v(LOG_TAG, "item.date = " + item.date);
+                SimpleDateFormat sdf = new SimpleDateFormat("d/M/yy");
+                String dateStr = sdf.format(item.date);
+                Log.v(LOG_TAG, "date: " + dateStr);
+                tvDate.setText(sdf.format(item.date));
+                tvDate.setTextColor(Color.GRAY);
             }
             return convertView;
         }
     }
 
     /**
+     * Date picker dialog.
      * Created by dw on 27/01/17.
      */
+    // TODO: improve handling of dates (new class providing format and parse methods)
     public static class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
         private final String LOG_TAG = DatePickerFragment.class.getSimpleName();

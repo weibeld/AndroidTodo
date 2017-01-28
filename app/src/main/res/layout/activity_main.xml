@@ -21,7 +21,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:paddingLeft="6dp">
 
         <EditText
             android:id="@+id/etNewItem"
@@ -43,8 +44,6 @@
 
     </LinearLayout>
 
-
-
     <Spinner
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -53,7 +52,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:paddingTop="8dp"
-        android:paddingBottom="8dp"/>
+        android:paddingBottom="8dp" />
 
     <Spinner
         android:layout_width="wrap_content"

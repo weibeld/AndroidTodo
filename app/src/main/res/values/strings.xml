@@ -4,6 +4,10 @@
     <string name="edit_text_hint">Enter a new item</string>
     <string name="text_view_title">Edit item below:</string>
     <string name="btn_save">Save</string>
+    <string name="toast_enter_text">Please enter some text describing your item.</string>
+    <string name="priority_high">HIGH</string>
+    <string name="priority_medium">MEDIUM</string>
+    <string name="priority_low">LOW</string>
 
     <string-array name="priority">
         <item>No priority</item>
