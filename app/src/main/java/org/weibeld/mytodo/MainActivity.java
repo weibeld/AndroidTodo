@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +30,9 @@ import org.weibeld.mytodo.data.TodoItem;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import nl.qbusict.cupboard.QueryResultIterable;
 
@@ -140,18 +144,49 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Add a new item to the database and the ArrayList
+    // Add a new item to the database and to the ArrayList
     public void onAddItem(View view) {
-        EditText editText = (EditText) findViewById(R.id.etNewItem);
-        String text = editText.getText().toString();
+        // Create a new TodoItem based on the information in the input fields
         TodoItem item = new TodoItem();
-        item.text = text;
+        EditText editText = (EditText) findViewById(R.id.etNewItem);
+        item.text =  editText.getText().toString();;
         item.priority = mSpinPrior.getSelectedItemPosition();
-        cupboard().withDatabase(mDb).put(item);  // Add item to database
-        mItemsAdapter.add(item);  // Add item to ArrayList
+        switch(mSpinDate.getSelectedItemPosition()) {
+            case 0:
+            case 1:
+                item.date = -1;
+                break;
+            case 2:
+                item.date = parseDate((String) mSpinPrior.getSelectedItem());
+                break;
+            default:
+                item.date = -1;
+        }
+        // Add the new item to the database and to the ArrayList
+        cupboard().withDatabase(mDb).put(item);
+        mItemsAdapter.add(item);
         mItemsAdapter.notifyDataSetChanged();
         editText.setText("");
+        // Scroll to end of list
         mListView.setSelection(mItemsAdapter.getCount() - 1);
+    }
+
+    // Parse a string containing a "dd/mm/yy" date and return the UNIX timestamp (ms) of this date
+    private long parseDate(String dateStr) {
+        Pattern pattern = Pattern.compile("(\\d\\d?)/(\\d\\d?)/(\\d\\d?)");
+        Matcher matcher = pattern.matcher(dateStr);
+        if (matcher.find()) {
+            int day = Integer.parseInt(matcher.group(1));
+            int month = Integer.parseInt(matcher.group(2)) + 1;
+            int year = Integer.parseInt(matcher.group(3)) + 2000;
+            GregorianCalendar date = new GregorianCalendar();
+            date.set(year, month, day);
+            return date.getTimeInMillis();
+        }
+        else {
+            Log.e(LOG_TAG, "Invalid date format in string: " + dateStr);
+            return -1;
+        }
     }
 
     // Initialise the 'mItems' ArrayList with all the items in the database
