@@ -4,7 +4,7 @@
 
 Submitted by: **Daniel Weibel**
 
-Time spent: **3** hours spent in total
+Time spent: **12** hours spent in total
 
 
 ## User Stories
@@ -24,28 +24,40 @@ The following **optional** features are implemented:
 * [x] Add support for selecting the priority of each todo item (and display in listview item)
 * [ ] Tweak the style improving the UI / UX, play with colors, images or backgrounds
 
-The following **additional** features are implemented:
-
-* [ ] List anything else that you can get done to improve the app functionality!
-
 
 ## Video Walkthrough 
+
+Here's a walkthrough of the implemented **optional/additional** user stories:
+
+![Video Walkthrough](walkthrough_master.gif)
 
 Here's a walkthrough of the implemented **required** user stories:
 
 ![Video Walkthrough](walkthrough_required.gif)
-
-Here's a walkthrough of the implemented **optional/additional** user stories:
-
-*[coming soon]*
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
 
 ## Notes
 
-No major difficulties encountered with the basic version of the app. Now working on the optional/additional features.
-
+- No major difficulties encountered, the most time-consuming part is probably to get the layouts right
+- Use of **Cupboard** to facilitate SQLite database management
+- **Flexibility** and **rapidity** of use are the main design aims of this app:
+    - The text box to enter a new item is in the main activity, ready to be used without any additional clicks
+    - A priority and/or a due date may be selected for each item, but this is optional to provide more flexibility
+    - Very long and multi-line items are supported
+- **Ideas for next steps:**
+    - Wrap the input views (at the bottom of the MainAtivity) in a fragment, and use this fragment in both, the MainActivity and the EditActivity
+    - Make the EditActivity a fullscreen dialog according to https://material.io/guidelines/components/dialogs.html#dialogs-full-screen-dialogs
+    - Replace the ActionBar by a Toolbar
+    - Make the ListView items selectable on long click and provide the actions "Delete" and "Mark as done" for the selected items
+    - Swipe ListView items in order to "mark as done"
+    - Additional activity that displays all the items that have been "marked as done"
+    - Save creation date of each item in the database
+    - Provide actions in the app bar for sorting the items:
+        - By priority, then due date
+        - By due date, then priority
+        - By creation date
 
 ## License
 
