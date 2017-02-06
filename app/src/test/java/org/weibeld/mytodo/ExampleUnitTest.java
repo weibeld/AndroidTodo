@@ -1,6 +1,7 @@
 package org.weibeld.mytodo;
 
 import org.junit.Test;
+import org.weibeld.mytodo.util.MyDate;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -21,7 +22,6 @@ public class ExampleUnitTest {
     @Test
     public void parseDate_test() throws Exception {
 
-        // First, test valid dimension value strings
         String[] dates = new String[] {
                 "1/1/17", "Due 12/12/17", "Due 12/12/17 noon", "1 jan 2017"
         };
@@ -32,6 +32,22 @@ public class ExampleUnitTest {
             if (matcher.find()) {
                 System.out.println(matcher.group() + ": group 1 = " + matcher.group(1) + ", group 2 = " + matcher.group(2) + ", group 3 = " + matcher.group(3));
             }
+        }
+    }
+
+    @Test
+    public void myDate_test() throws Exception {
+
+        String[] dateStrings = new String[] {
+                "1/1/17", "Due 15/6/1960", "Due 28/2/2017 foo"
+        };
+
+        int dateInts[][] = {{1, 0, 2017}, {15, 5, 1960}, {28, 1, 2017}};
+
+        for (int i = 0; i < dateStrings.length; i++) {
+            MyDate date1 = new MyDate(dateStrings[i]);
+            MyDate date2 = new MyDate(dateInts[i][2], dateInts[i][1], dateInts[i][0]);
+            assertEquals(date1.getTimestamp(), date2.getTimestamp());
         }
     }
 }

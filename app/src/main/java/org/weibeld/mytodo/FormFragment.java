@@ -24,14 +24,11 @@ import android.widget.Toast;
 
 import org.weibeld.mytodo.data.TodoDatabaseHelper;
 import org.weibeld.mytodo.data.TodoItem;
+import org.weibeld.mytodo.util.MyDate;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static android.app.Activity.RESULT_OK;
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
@@ -122,18 +119,10 @@ public class FormFragment extends Fragment {
                 // Set the item properties according to the input form fields
                 item.text = mEditText.getText().toString();
                 item.priority = mSpinPrior.getSelectedItemPosition();
-                // Pos 0="No due date", 1="Select date...", 2=<selected date>
-                switch (mSpinDate.getSelectedItemPosition()) {
-                    case 0:
-                    case 1:
-                        item.date = -1;
-                        break;
-                    case 2:
-                        item.date = parseDate((String) mSpinDate.getSelectedItem());
-                        break;
-                    default:
-                        item.date = -1;
-                }
+                if (mSpinDate.getSelectedItemPosition() == 2)
+                    item.due_ts = new MyDate((String) mSpinDate.getSelectedItem()).getTimestamp();
+                else
+                    item.due_ts = null;
 
                 if (mMainActivity != null) {
                     // Add the new item to the database and to the ArrayList
@@ -179,12 +168,10 @@ public class FormFragment extends Fragment {
             mEditText.setText(item.text);
             mEditText.setSelection(mEditText.getText().length());  // Set cursor to end of text
             mSpinPrior.setSelection(item.priority);
-            if (item.date == -1)
+            if (item.due_ts == null)
                 mSpinDate.setSelection(0);
             else {
-                SimpleDateFormat sdf = new SimpleDateFormat("d/M/yy");
-                String dateStr = sdf.format(item.date);
-                mSpinDateItems.add(dateStr);
+                mSpinDateItems.add(getDueDateSpinnerString(new MyDate(item.due_ts)));
                 mSpinDateAdapter.notifyDataSetChanged();
                 mSpinDate.setSelection(2);
             }
@@ -193,18 +180,8 @@ public class FormFragment extends Fragment {
         return rootView;
     }
 
-    // Parse a string containing a "dd/mm/yy" date and return the UNIX timestamp (ms) of this date
-    private long parseDate(String dateStr) {
-        Pattern pattern = Pattern.compile("(\\d\\d?)/(\\d\\d?)/(\\d\\d?)");
-        Matcher matcher = pattern.matcher(dateStr);
-        if (!matcher.find())
-            (new Exception("Invalid date string: " + dateStr)).printStackTrace();
-        int day = Integer.parseInt(matcher.group(1));
-        int month = Integer.parseInt(matcher.group(2)) - 1;
-        int year = Integer.parseInt(matcher.group(3)) + 2000;
-        GregorianCalendar date = new GregorianCalendar();
-        date.set(year, month, day);
-        return date.getTimeInMillis();
+    public static String getDueDateSpinnerString(MyDate date) {
+        return "Due " + date.toString();
     }
 
     /**
@@ -230,15 +207,13 @@ public class FormFragment extends Fragment {
         // Called if the user selected a date from the date picker dialog
         @Override
         public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-            month = month + 1;  // Months are numbered 0-11
-            year = year % 100;  // Keep only two-digit year to use less space
-            String date = "Due " + dayOfMonth + "/" + month + "/" + year;
+            MyDate date = new MyDate(year, month, dayOfMonth);
             FormFragment f = (FormFragment) getActivity().getFragmentManager().findFragmentById(R.id.fragment_container);
             // If a date has been selected before, replace it in the spinner, else add the new date
             if (f.mSpinDateItems.size() > 2)
-                f.mSpinDateItems.set(2, date);
+                f.mSpinDateItems.set(2, getDueDateSpinnerString(date));
             else
-                f.mSpinDateItems.add(date);
+                f.mSpinDateItems.add(getDueDateSpinnerString(date));
             f.mSpinDateAdapter.notifyDataSetChanged();
             f.mSpinDate.setSelection(2);
         }

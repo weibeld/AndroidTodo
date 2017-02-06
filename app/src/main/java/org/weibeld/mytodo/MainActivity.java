@@ -8,7 +8,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,8 +18,8 @@ import android.widget.TextView;
 
 import org.weibeld.mytodo.data.TodoDatabaseHelper;
 import org.weibeld.mytodo.data.TodoItem;
+import org.weibeld.mytodo.util.MyDate;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
 import nl.qbusict.cupboard.QueryResultIterable;
@@ -131,9 +130,6 @@ public class MainActivity extends AppCompatActivity {
 
             tvText.setText(item.text);
             switch (item.priority) {
-                case 0:
-                    tvPriority.setText("");
-                    break;
                 case 1:
                     tvPriority.setText(R.string.priority_high);
                     tvPriority.setTextColor(Color.RED);
@@ -150,15 +146,11 @@ public class MainActivity extends AppCompatActivity {
                     tvPriority.setText("");
             }
 
-            Log.v(LOG_TAG, "item.date = " + item.date);
-            if (item.date == -1)
+            if (item.due_ts == null)
                 tvDate.setText("");
             else {
-                Log.v(LOG_TAG, "item.date = " + item.date);
-                SimpleDateFormat sdf = new SimpleDateFormat("d/M/yy");
-                String dateStr = sdf.format(item.date);
-                Log.v(LOG_TAG, "date: " + dateStr);
-                tvDate.setText(sdf.format(item.date));
+                MyDate date = new MyDate(item.due_ts);
+                tvDate.setText(date.toString());
                 tvDate.setTextColor(Color.GRAY);
             }
             return convertView;
