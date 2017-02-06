@@ -32,7 +32,6 @@ import java.util.Calendar;
 
 import static android.app.Activity.RESULT_OK;
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
-import static org.weibeld.mytodo.R.array.date;
 
 /**
  * Created by dw on 06/02/17.
@@ -74,12 +73,12 @@ public class FormFragment extends Fragment {
         mButton = (Button) rootView.findViewById(R.id.button);
 
         // Priority spinner (read selected value in onAdditem method)
-        mSpinPriorAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.priority, android.R.layout.simple_spinner_item);
+        mSpinPriorAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.spin_priority, android.R.layout.simple_spinner_item);
         mSpinPriorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinPrior.setAdapter(mSpinPriorAdapter);
 
         // Date spinner (read selected value in onAdditem method)
-        mSpinDateItems = new ArrayList<>(Arrays.asList(getResources().getStringArray(date)));
+        mSpinDateItems = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.spin_date_1)));
         mSpinDateAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_spinner_item, mSpinDateItems);
         mSpinDateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinDate.setAdapter(mSpinDateAdapter);
@@ -88,13 +87,10 @@ public class FormFragment extends Fragment {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 // "None" selected: remove the dynamically added date item if present
                 if (position == 0) {
-                    if (mSpinDateItems.size() > 2) {
-                        mSpinDateItems.remove(2);
-                        mSpinDateAdapter.notifyDataSetChanged();
-                    }
+                    if (isDateSelectedInSpinner()) resetDateSpinnerItems();
                 }
                 // "Select..." selected: launch the date picker dialog
-                if (position == 1) {
+                else if (position == 1) {
                     DialogFragment datePicker = new DatePickerFragment();
                     datePicker.show(getFragmentManager(), "datePicker");
                 }
@@ -124,7 +120,7 @@ public class FormFragment extends Fragment {
                 else
                     item.due_ts = null;
 
-                if (mMainActivity != null) {
+                if (isInMainActivity()) {
                     // Add the new item to the database and to the ArrayList
                     cupboard().withDatabase(mDb).put(item);
                     mMainActivity.mItemsAdapter.add(item);
@@ -132,15 +128,11 @@ public class FormFragment extends Fragment {
                     // Reset input fields
                     mEditText.setText("");
                     mSpinPrior.setSelection(0);
-                    if (mSpinDateItems.size() > 2) {
-                        mSpinDateItems.remove(2);
-                        mSpinDateAdapter.notifyDataSetChanged();
-                    }
-                    mSpinDate.setSelection(0);
+                    if (isDateSelectedInSpinner()) resetDateSpinnerItems();
                     // Scroll to end of list
                     mMainActivity.mListView.setSelection(mMainActivity.mItemsAdapter.getCount() - 1);
                 }
-                else if (mEditActivity != null) {
+                else if (isInEditActivity()) {
                     Intent result = new Intent();
                     result.putExtra(MainActivity.EXTRA_CODE_ITEM, item);
                     result.putExtra(MainActivity.EXTRA_CODE_ITEM_POS, mEditActivity.mPosition);
@@ -151,44 +143,71 @@ public class FormFragment extends Fragment {
         });
 
         // Customise look and feel
-        if (mMainActivity != null) {
+        if (isInMainActivity()) {
             rootView.findViewById(R.id.form_container).setBackgroundColor(Color.parseColor("#FFF9C4"));
             mButton.setText(R.string.button_add);
             mEditText.setHint(R.string.hint_new);
         }
-        else if (mEditActivity != null) {
+        else if (isInEditActivity()) {
             rootView.findViewById(R.id.form_container).setBackgroundColor(Color.TRANSPARENT);
             mButton.setText(R.string.button_save);
             mEditText.setHint(R.string.hint_edit);
         }
 
         // If attached to EditActivity, get the item to edit and set the input fields accordingly
-        if (mEditActivity != null) {
+        if (isInEditActivity()) {
             TodoItem item = mEditActivity.mItem;
             mEditText.setText(item.text);
             mEditText.setSelection(mEditText.getText().length());  // Set cursor to end of text
             mSpinPrior.setSelection(item.priority);
-            if (item.due_ts == null)
-                mSpinDate.setSelection(0);
-            else {
-                mSpinDateItems.add(getDueDateSpinnerString(new MyDate(item.due_ts)));
-                mSpinDateAdapter.notifyDataSetChanged();
-                mSpinDate.setSelection(2);
-            }
+            if (item.due_ts != null)
+                extendDateSpinnerItems(new MyDate(item.due_ts));
         }
 
         return rootView;
     }
 
-    public static String getDueDateSpinnerString(MyDate date) {
+    private void resetDateSpinnerItems() {
+        mSpinDateAdapter.clear();
+        mSpinDateAdapter.addAll(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.spin_date_1))));
+        mSpinDateAdapter.notifyDataSetChanged();
+        mSpinDate.setSelection(0);
+    }
+
+    private void extendDateSpinnerItems(MyDate date) {
+        if (isDateSelectedInSpinner())
+            mSpinDateItems.set(2, getDueDateSpinnerString(date));
+        else {
+            mSpinDateAdapter.clear();
+            mSpinDateAdapter.addAll(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.spin_date_2))));
+            mSpinDateItems.add(getDueDateSpinnerString(date));
+        }
+        mSpinDateAdapter.notifyDataSetChanged();
+        mSpinDate.setSelection(2);
+    }
+
+    private boolean isDateSelectedInSpinner() {
+        return mSpinDateItems.size() > 2;
+    }
+
+    private boolean isInMainActivity() {
+        return mMainActivity != null;
+    }
+
+    private boolean isInEditActivity() {
+        return mEditActivity != null;
+    }
+
+    private String getDueDateSpinnerString(MyDate date) {
         return "Due " + date.toString();
     }
+
+
 
     /**
      * Date picker dialog.
      * Created by dw on 27/01/17.
      */
-    // TODO: improve handling of dates (new class providing format and parse methods)
     public static class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
         private final String LOG_TAG = DatePickerFragment.class.getSimpleName();
@@ -209,13 +228,7 @@ public class FormFragment extends Fragment {
         public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
             MyDate date = new MyDate(year, month, dayOfMonth);
             FormFragment f = (FormFragment) getActivity().getFragmentManager().findFragmentById(R.id.fragment_container);
-            // If a date has been selected before, replace it in the spinner, else add the new date
-            if (f.mSpinDateItems.size() > 2)
-                f.mSpinDateItems.set(2, getDueDateSpinnerString(date));
-            else
-                f.mSpinDateItems.add(getDueDateSpinnerString(date));
-            f.mSpinDateAdapter.notifyDataSetChanged();
-            f.mSpinDate.setSelection(2);
+            f.extendDateSpinnerItems(date);
         }
 
         // Called if the user cancelled the date picker dialog
@@ -223,7 +236,7 @@ public class FormFragment extends Fragment {
         public void onCancel(DialogInterface dialog) {
             FormFragment f = (FormFragment) getActivity().getFragmentManager().findFragmentById(R.id.fragment_container);
             // Set the selected item away from the currently selected "Select..." item
-            if (f.mSpinDateItems.size() > 2)
+            if (f.isDateSelectedInSpinner())
                 f.mSpinDate.setSelection(2);
             else
                 f.mSpinDate.setSelection(0);

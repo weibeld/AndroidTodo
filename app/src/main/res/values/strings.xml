@@ -9,15 +9,22 @@
     <string name="priority_medium">MEDIUM</string>
     <string name="priority_low">LOW</string>
 
-    <string-array name="priority">
+    <string-array name="spin_priority">
         <item>No priority</item>
         <item>High priority</item>
         <item>Medium priority</item>
         <item>Low priority</item>
     </string-array>
 
-    <string-array name="date">
-        <item>No due date</item>
+    <string name="no_due_date">No due date</string>
+
+    <string-array name="spin_date_1">
+        <item>@string/no_due_date</item>
         <item>Select due date&#8230;</item>
+    </string-array>
+
+    <string-array name="spin_date_2">
+        <item>@string/no_due_date</item>
+        <item>Change due date&#8230;</item>
     </string-array>
 </resources>
