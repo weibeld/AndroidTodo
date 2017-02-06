@@ -1,11 +1,14 @@
 package org.weibeld.mytodo;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -22,6 +25,7 @@ import android.widget.Toast;
 import org.weibeld.mytodo.data.TodoDatabaseHelper;
 import org.weibeld.mytodo.data.TodoItem;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -29,6 +33,7 @@ import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static android.app.Activity.RESULT_OK;
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 import static org.weibeld.mytodo.R.array.date;
 
@@ -38,6 +43,8 @@ import static org.weibeld.mytodo.R.array.date;
 
 public class FormFragment extends Fragment {
 
+    private final String LOG_TAG = FormFragment.class.getSimpleName();
+
     SQLiteDatabase mDb;
 
     Spinner mSpinPrior;
@@ -45,30 +52,36 @@ public class FormFragment extends Fragment {
     Spinner mSpinDate;
     ArrayAdapter<CharSequence> mSpinDateAdapter;
     ArrayList<String> mSpinDateItems;
-
     EditText mEditText;
+    Button mButton;
 
-    MainActivity mActivity;
+    MainActivity mMainActivity;
+    EditActivity mEditActivity;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         View rootView = inflater.inflate(R.layout.fragment_form, container, false);
 
+        mMainActivity = null;
+        mEditActivity = null;
+        Activity activity = getActivity();
+        if      (activity instanceof MainActivity) mMainActivity = (MainActivity) activity;
+        else if (activity instanceof EditActivity) mEditActivity = (EditActivity) activity;
+
         mDb = (new TodoDatabaseHelper(getActivity())).getWritableDatabase();
-
         mEditText = (EditText) rootView.findViewById(R.id.etNewItem);
-
-        mActivity = (MainActivity) getActivity();
+        mSpinPrior = (Spinner) rootView.findViewById(R.id.spinPriority);
+        mSpinDate = (Spinner) rootView.findViewById(R.id.spinDate);
+        mButton = (Button) rootView.findViewById(R.id.button);
 
         // Priority spinner (read selected value in onAdditem method)
-        mSpinPrior = (Spinner) rootView.findViewById(R.id.spinPriority);
         mSpinPriorAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.priority, android.R.layout.simple_spinner_item);
         mSpinPriorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinPrior.setAdapter(mSpinPriorAdapter);
 
         // Date spinner (read selected value in onAdditem method)
-        mSpinDate = (Spinner) rootView.findViewById(R.id.spinDate);
         mSpinDateItems = new ArrayList<>(Arrays.asList(getResources().getStringArray(date)));
         mSpinDateAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_spinner_item, mSpinDateItems);
         mSpinDateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -95,19 +108,22 @@ public class FormFragment extends Fragment {
             }
         });
 
-        Button button = (Button) rootView.findViewById(R.id.button);
-        button.setOnClickListener(new View.OnClickListener() {
+        mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (mEditText.length() == 0) {
                     Toast.makeText(getActivity(), R.string.toast_enter_text, Toast.LENGTH_SHORT).show();
                     return;
                 }
-                // Create a new TodoItem based on the information in the input fields
-                TodoItem item = new TodoItem();
-                item.text =  mEditText.getText().toString();;
+                TodoItem item = null;
+                if      (mMainActivity != null) item = new TodoItem();
+                else if (mEditActivity != null) item = mEditActivity.mItem;
+
+                // Set the item properties according to the input form fields
+                item.text = mEditText.getText().toString();
                 item.priority = mSpinPrior.getSelectedItemPosition();
-                switch(mSpinDate.getSelectedItemPosition()) {
+                // Pos 0="No due date", 1="Select date...", 2=<selected date>
+                switch (mSpinDate.getSelectedItemPosition()) {
                     case 0:
                     case 1:
                         item.date = -1;
@@ -118,22 +134,61 @@ public class FormFragment extends Fragment {
                     default:
                         item.date = -1;
                 }
-                // Add the new item to the database and to the ArrayList
-                cupboard().withDatabase(mDb).put(item);
-                mActivity.mItemsAdapter.add(item);
-                mActivity.mItemsAdapter.notifyDataSetChanged();
-                // Reset input fields
-                mEditText.setText("");
-                mSpinPrior.setSelection(0);
-                if (mSpinDateItems.size() > 2) {
-                    mSpinDateItems.remove(2);
-                    mSpinDateAdapter.notifyDataSetChanged();
+
+                if (mMainActivity != null) {
+                    // Add the new item to the database and to the ArrayList
+                    cupboard().withDatabase(mDb).put(item);
+                    mMainActivity.mItemsAdapter.add(item);
+                    mMainActivity.mItemsAdapter.notifyDataSetChanged();
+                    // Reset input fields
+                    mEditText.setText("");
+                    mSpinPrior.setSelection(0);
+                    if (mSpinDateItems.size() > 2) {
+                        mSpinDateItems.remove(2);
+                        mSpinDateAdapter.notifyDataSetChanged();
+                    }
+                    mSpinDate.setSelection(0);
+                    // Scroll to end of list
+                    mMainActivity.mListView.setSelection(mMainActivity.mItemsAdapter.getCount() - 1);
                 }
-                mSpinDate.setSelection(0);
-                // Scroll to end of list
-                mActivity.mListView.setSelection(mActivity.mItemsAdapter.getCount() - 1);
+                else if (mEditActivity != null) {
+                    Intent result = new Intent();
+                    result.putExtra(MainActivity.EXTRA_CODE_ITEM, item);
+                    result.putExtra(MainActivity.EXTRA_CODE_ITEM_POS, mEditActivity.mPosition);
+                    mEditActivity.setResult(RESULT_OK, result);
+                    mEditActivity.finish();
+                }
             }
         });
+
+        // Customise look and feel
+        if (mMainActivity != null) {
+            rootView.findViewById(R.id.form_container).setBackgroundColor(Color.parseColor("#FFF9C4"));
+            mButton.setText(R.string.button_add);
+            mEditText.setHint(R.string.hint_new);
+        }
+        else if (mEditActivity != null) {
+            rootView.findViewById(R.id.form_container).setBackgroundColor(Color.TRANSPARENT);
+            mButton.setText(R.string.button_save);
+            mEditText.setHint(R.string.hint_edit);
+        }
+
+        // If attached to EditActivity, get the item to edit and set the input fields accordingly
+        if (mEditActivity != null) {
+            TodoItem item = mEditActivity.mItem;
+            mEditText.setText(item.text);
+            mEditText.setSelection(mEditText.getText().length());  // Set cursor to end of text
+            mSpinPrior.setSelection(item.priority);
+            if (item.date == -1)
+                mSpinDate.setSelection(0);
+            else {
+                SimpleDateFormat sdf = new SimpleDateFormat("d/M/yy");
+                String dateStr = sdf.format(item.date);
+                mSpinDateItems.add(dateStr);
+                mSpinDateAdapter.notifyDataSetChanged();
+                mSpinDate.setSelection(2);
+            }
+        }
 
         return rootView;
     }
