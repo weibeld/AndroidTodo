@@ -22,7 +22,11 @@ The following **optional** features are implemented:
 * [x] Add support for completion due dates for todo items (and display within listview item)
 * [ ] Use a [DialogFragment](http://guides.codepath.com/android/Using-DialogFragment) instead of new Activity for editing items
 * [x] Add support for selecting the priority of each todo item (and display in listview item)
-* [ ] Tweak the style improving the UI / UX, play with colors, images or backgrounds
+* [x] Tweak the style improving the UI / UX, play with colors, images or backgrounds
+
+The following **additional** features are implemented:
+
+* [x] Use of a fragment for the input form which is used in both the MainActivity and EditActivity
 
 
 ## Video Walkthrough 
@@ -47,7 +51,6 @@ GIF created with [LiceCap](http://www.cockos.com/licecap/).
     - A priority and/or a due date may be selected for each item, but this is optional to provide more flexibility
     - Very long and multi-line items are supported
 - **Ideas for next steps:**
-    - Wrap the input views (at the bottom of the MainActivity) in a fragment, and use this fragment in both, the MainActivity and the EditActivity
     - Make the EditActivity a fullscreen dialog according to https://material.io/guidelines/components/dialogs.html#dialogs-full-screen-dialogs
     - Replace the ActionBar by a Toolbar
     - Make the ListView items selectable on long click and provide the actions "Delete" and "Mark as done" for the selected items
