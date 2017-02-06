@@ -2,6 +2,7 @@ package org.weibeld.mytodo.util;
 
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
@@ -56,5 +57,32 @@ public class MyDate {
 
     public long getTimestamp() {
         return mTimestamp;
+    }
+
+    /**
+     * @return the year, e.g. 2017
+     */
+    public int getYear() {
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTimeInMillis(mTimestamp);
+        return cal.get(Calendar.YEAR);
+    }
+
+    /**
+     * @return the month starting from 0 (i.e. 0-11)
+     */
+    public int getMonth() {
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTimeInMillis(mTimestamp);
+        return cal.get(Calendar.MONTH);
+    }
+
+    /**
+     * @return the day of the month (1-31)
+     */
+    public int getDay() {
+        GregorianCalendar cal = new GregorianCalendar();
+        cal.setTimeInMillis(mTimestamp);
+            return cal.get(Calendar.DAY_OF_MONTH);
     }
 }

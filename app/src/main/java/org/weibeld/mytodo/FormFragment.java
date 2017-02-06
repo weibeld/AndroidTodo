@@ -214,13 +214,20 @@ public class FormFragment extends Fragment {
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Use the current date as the default date in the picker
             // TODO: if a date has been previously selected, set this date as the default date
-            final Calendar c = Calendar.getInstance();
-            int year = c.get(Calendar.YEAR);
-            int month = c.get(Calendar.MONTH);
-            int day = c.get(Calendar.DAY_OF_MONTH);
-            return new DatePickerDialog(getActivity(), this, year, month, day);
+            FormFragment f = (FormFragment) getActivity().getFragmentManager().findFragmentById(R.id.fragment_container);
+            if (f.isDateSelectedInSpinner()) {
+                MyDate date = new MyDate((String) f.mSpinDate.getItemAtPosition(2));
+                return new DatePickerDialog(getActivity(), this, date.getYear(), date.getMonth(), date.getDay());
+            }
+            // Use the current date as the default date in the picker
+            else {
+                final Calendar c = Calendar.getInstance();
+                int year = c.get(Calendar.YEAR);
+                int month = c.get(Calendar.MONTH);
+                int day = c.get(Calendar.DAY_OF_MONTH);
+                return new DatePickerDialog(getActivity(), this, year, month, day);
+            }
         }
 
         // Called if the user selected a date from the date picker dialog
