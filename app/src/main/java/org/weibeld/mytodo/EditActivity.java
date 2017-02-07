@@ -1,11 +1,13 @@
 package org.weibeld.mytodo;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import org.weibeld.mytodo.data.TodoItem;
@@ -52,6 +54,7 @@ public class EditActivity extends AppCompatActivity {
             public void onClick(View v) {
                 FormFragment f = (FormFragment) getFragmentManager().findFragmentById(R.id.fragment_container);
                 if (f.onSaveClicked())
+                    hideKeyboardIfPresent();
                     showToast(R.string.toast_edits_saved);
             }
         });
@@ -67,6 +70,7 @@ public class EditActivity extends AppCompatActivity {
     private void confirmExit() {
         if (isUntouched()) {
             //showToast(R.string.toast_no_changes);
+            hideKeyboardIfPresent();
             finish();
         }
         else {
@@ -80,6 +84,7 @@ public class EditActivity extends AppCompatActivity {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             //showToast(R.string.toast_no_changes);
+                            hideKeyboardIfPresent();
                             finish();
                         }
                     }).
@@ -112,6 +117,14 @@ public class EditActivity extends AppCompatActivity {
         if (date1 != null && date2 == null) return false;
         if (date1 == null && date2 == null) return true;
         return date1.equals(date2);
+    }
+
+    // Hide the soft keyboard if it is currently displayed. This should be called immediaely before
+    // the activity is exited to prevent that the keyboard is still shown in the parent activity
+    // for a short moment.
+    private void hideKeyboardIfPresent() {
+        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(findViewById(R.id.etNewItem).getWindowToken(), 0);
     }
 
     private void showToast(int msgStr) {
