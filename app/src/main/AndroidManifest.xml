@@ -16,8 +16,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".EditActivity"
-            android:windowSoftInputMode="stateVisible">
+            android:name=".EditActivity">
         </activity>
     </application>
 

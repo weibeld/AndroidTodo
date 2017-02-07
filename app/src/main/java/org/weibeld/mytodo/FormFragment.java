@@ -33,9 +33,18 @@ import static android.app.Activity.RESULT_OK;
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
 /**
- * Created by dw on 06/02/17.
+ * Fragment providing an input form for creating/editing a TodoItem. This fragment is displayed in
+ * the MainActivity (for creating an item) and in the EditActivity (for editing an item).
+ *
+ * Note that when the fragment is used in the EditActivity, the Save button is hidden, because this
+ * functionality is assumed by the Save button in the Toolbar of the EditActivity.
+ *
+ * The priority spinner always has four items (0=none, 1=high, 2=medium, 3=low). It is the position
+ * of the selected item (0-3) that is saved in the priority field of the TodoItem.
+ *
+ * The date spinner has two items if no date has been selected (0="no date", 1="select date..."),
+ * and three items if a date has been selected (0="no date", 1="change date...", 2=<date>).
  */
-
 public class FormFragment extends Fragment {
 
     private final String LOG_TAG = FormFragment.class.getSimpleName();
@@ -59,24 +68,26 @@ public class FormFragment extends Fragment {
 
         View rootView = inflater.inflate(R.layout.fragment_form, container, false);
 
+        // Determine whether this fragment instance is attached to a MainActivity or an EditActivity
         mMainActivity = null;
         mEditActivity = null;
         Activity activity = getActivity();
         if      (activity instanceof MainActivity) mMainActivity = (MainActivity) activity;
         else if (activity instanceof EditActivity) mEditActivity = (EditActivity) activity;
 
+        // Initialise database and views
         mDb = (new TodoDatabaseHelper(getActivity())).getWritableDatabase();
         mEditText = (EditText) rootView.findViewById(R.id.etNewItem);
         mSpinPrior = (Spinner) rootView.findViewById(R.id.spinPriority);
         mSpinDate = (Spinner) rootView.findViewById(R.id.spinDate);
         mButton = (Button) rootView.findViewById(R.id.button);
 
-        // Priority spinner (read selected value in onAdditem method)
+        // Set up the priority spinner
         mSpinPriorAdapter = ArrayAdapter.createFromResource(getActivity(), R.array.spin_priority, android.R.layout.simple_spinner_item);
         mSpinPriorAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mSpinPrior.setAdapter(mSpinPriorAdapter);
 
-        // Date spinner (read selected value in onAdditem method)
+        // Set up the date spinner
         mSpinDateItems = new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.spin_date_1)));
         mSpinDateAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_spinner_item, mSpinDateItems);
         mSpinDateAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -100,48 +111,15 @@ public class FormFragment extends Fragment {
             }
         });
 
+        // Set up the Save button of this form
         mButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mEditText.length() == 0) {
-                    Toast.makeText(getActivity(), R.string.toast_enter_text, Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                TodoItem item = null;
-                if      (mMainActivity != null) item = new TodoItem();
-                else if (mEditActivity != null) item = mEditActivity.mItem;
-
-                // Set the item properties according to the input form fields
-                item.text = mEditText.getText().toString();
-                item.priority = mSpinPrior.getSelectedItemPosition();
-                if (mSpinDate.getSelectedItemPosition() == 2)
-                    item.due_ts = new MyDate((String) mSpinDate.getSelectedItem()).getTimestamp();
-                else
-                    item.due_ts = null;
-
-                if (isInMainActivity()) {
-                    // Add the new item to the database and to the ArrayList
-                    cupboard().withDatabase(mDb).put(item);
-                    mMainActivity.mItemsAdapter.add(item);
-                    mMainActivity.mItemsAdapter.notifyDataSetChanged();
-                    // Reset input fields
-                    mEditText.setText("");
-                    mSpinPrior.setSelection(0);
-                    if (isDateSelectedInSpinner()) resetDateSpinnerItems();
-                    // Scroll to end of list
-                    mMainActivity.mListView.setSelection(mMainActivity.mItemsAdapter.getCount() - 1);
-                }
-                else if (isInEditActivity()) {
-                    Intent result = new Intent();
-                    result.putExtra(MainActivity.EXTRA_CODE_ITEM, item);
-                    result.putExtra(MainActivity.EXTRA_CODE_ITEM_POS, mEditActivity.mPosition);
-                    mEditActivity.setResult(RESULT_OK, result);
-                    mEditActivity.finish();
-                }
+                onSaveClicked();
             }
         });
 
-        // Customise look and feel
+        // Customise look and feel of the fragment depending on the enclosing activity
         if (isInMainActivity()) {
             rootView.findViewById(R.id.form_container).setBackgroundColor(getResources().getColor(android.R.color.background_light));
             //rootView.findViewById(R.id.form_container).setBackgroundColor(Color.parseColor("#E1F5FE"));
@@ -149,11 +127,12 @@ public class FormFragment extends Fragment {
             mEditText.setHint(R.string.hint_new);
         }
         else if (isInEditActivity()) {
-            mButton.setText(R.string.button_save);
+            // Hide Save button, because we want to use the save button in the Toolbar instead
+            mButton.setVisibility(View.GONE);
             mEditText.setHint(R.string.hint_edit);
         }
 
-        // If attached to EditActivity, get the item to edit and set the input fields accordingly
+        // If attached to EditActivity, preset the input fields according to the item to edit
         if (isInEditActivity()) {
             TodoItem item = mEditActivity.mItem;
             mEditText.setText(item.text);
@@ -166,6 +145,50 @@ public class FormFragment extends Fragment {
         return rootView;
     }
 
+    // Action to take for saving an item. This method is either called on clicking the Save button
+    // of this form (in MainActivity), or the Save button in the Toolbar (in EditActivity).
+    // Returns true if the item can be successfully saved, and false if the item cannot be saved
+    // because the input is invalid (e.g. empty text).
+    public boolean onSaveClicked() {
+        if (mEditText.length() == 0) {
+            Toast.makeText(getActivity(), R.string.toast_enter_text, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        TodoItem item = null;
+        if      (mMainActivity != null) item = new TodoItem();
+        else if (mEditActivity != null) item = mEditActivity.mItem;
+
+        // Set the item properties according to the input form fields
+        item.text = mEditText.getText().toString();
+        item.priority = mSpinPrior.getSelectedItemPosition();
+        if (mSpinDate.getSelectedItemPosition() == 2)
+            item.due_ts = new MyDate((String) mSpinDate.getSelectedItem()).getTimestamp();
+        else
+            item.due_ts = null;
+
+        if (isInMainActivity()) {
+            // Add the new item to the database and to the ArrayList
+            cupboard().withDatabase(mDb).put(item);
+            mMainActivity.mItemsAdapter.add(item);
+            mMainActivity.mItemsAdapter.notifyDataSetChanged();
+            // Reset input fields
+            mEditText.setText("");
+            mSpinPrior.setSelection(0);
+            if (isDateSelectedInSpinner()) resetDateSpinnerItems();
+            // Scroll to end of list
+            mMainActivity.mListView.setSelection(mMainActivity.mItemsAdapter.getCount() - 1);
+        }
+        else if (isInEditActivity()) {
+            Intent result = new Intent();
+            result.putExtra(MainActivity.EXTRA_CODE_ITEM, item);
+            result.putExtra(MainActivity.EXTRA_CODE_ITEM_POS, mEditActivity.mPosition);
+            mEditActivity.setResult(RESULT_OK, result);
+            mEditActivity.finish();
+        }
+        return true;
+    }
+
+    // Swap in the basic date spinner items (0="no date", 1="select date...")
     private void resetDateSpinnerItems() {
         mSpinDateAdapter.clear();
         mSpinDateAdapter.addAll(new ArrayList<>(Arrays.asList(getResources().getStringArray(R.array.spin_date_1))));
@@ -173,6 +196,10 @@ public class FormFragment extends Fragment {
         mSpinDate.setSelection(0);
     }
 
+    // Called after a date has been selected. If previously no date was selected, swap in the
+    // extended spinner items (0="no date", 1="change date...", 2=<date>). If the extended spinner
+    // items were already there (because a date was already selected), replace the content of the
+    // <date> item (position 2) with the newly selected date.
     private void extendDateSpinnerItems(MyDate date) {
         if (isDateSelectedInSpinner())
             mSpinDateItems.set(2, getDueDateSpinnerString(date));
@@ -185,23 +212,25 @@ public class FormFragment extends Fragment {
         mSpinDate.setSelection(2);
     }
 
+    // Return true if the date spinner items are in their extended form, and false otherwise
     private boolean isDateSelectedInSpinner() {
         return mSpinDateItems.size() > 2;
     }
 
+    // Return true if this fragment is attached to a MainActivity, and false otherwise
     private boolean isInMainActivity() {
         return mMainActivity != null;
     }
 
+    // Return true if this fragment is attached to an EditActivity, and false otherwise
     private boolean isInEditActivity() {
         return mEditActivity != null;
     }
 
+    // Construct the string for the <date> spinner item (position 2)
     private String getDueDateSpinnerString(MyDate date) {
         return "Due " + date.toString();
     }
-
-
 
     /**
      * Date picker dialog.
@@ -214,11 +243,12 @@ public class FormFragment extends Fragment {
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             FormFragment f = (FormFragment) getActivity().getFragmentManager().findFragmentById(R.id.fragment_container);
+            // If a date is already selected in the spinner, set the date picker to this date
             if (f.isDateSelectedInSpinner()) {
                 MyDate date = new MyDate((String) f.mSpinDate.getItemAtPosition(2));
                 return new DatePickerDialog(getActivity(), this, date.getYear(), date.getMonth(), date.getDay());
             }
-            // Use the current date as the default date in the picker
+            // If no date is selected in the spinner yet, set the date picker to today's date
             else {
                 final Calendar c = Calendar.getInstance();
                 int year = c.get(Calendar.YEAR);
@@ -228,7 +258,7 @@ public class FormFragment extends Fragment {
             }
         }
 
-        // Called if the user selected a date from the date picker dialog
+        // Called when the user selected a date from the date picker dialog
         @Override
         public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
             MyDate date = new MyDate(year, month, dayOfMonth);
@@ -236,7 +266,7 @@ public class FormFragment extends Fragment {
             f.extendDateSpinnerItems(date);
         }
 
-        // Called if the user cancelled the date picker dialog
+        // Called when the user cancelled the date picker dialog
         @Override
         public void onCancel(DialogInterface dialog) {
             FormFragment f = (FormFragment) getActivity().getFragmentManager().findFragmentById(R.id.fragment_container);

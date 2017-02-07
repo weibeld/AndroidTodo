@@ -10,6 +10,11 @@
     <string name="priority_low">LOW</string>
     <string name="no_due_date">No due date</string>
     <string name="toolbar_edit_activity">Edit Item</string>
+    <string name="toast_no_changes">No changes applied</string>
+    <string name="dialog_discard_msg">Discard current edits and go back to previous screen?</string>
+    <string name="dialog_discard_pos">Discard</string>
+    <string name="dialog_discard_neg">Cancel</string>
+    <string name="toast_edits_saved">Edits saved.</string>
 
     <string-array name="spin_priority">
         <item>No priority</item>

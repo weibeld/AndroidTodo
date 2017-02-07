@@ -85,4 +85,9 @@ public class MyDate {
         cal.setTimeInMillis(mTimestamp);
             return cal.get(Calendar.DAY_OF_MONTH);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return ((MyDate) obj).getTimestamp() == mTimestamp;
+    }
 }
