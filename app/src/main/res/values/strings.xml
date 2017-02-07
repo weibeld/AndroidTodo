@@ -8,6 +8,8 @@
     <string name="priority_high">HIGH</string>
     <string name="priority_medium">MEDIUM</string>
     <string name="priority_low">LOW</string>
+    <string name="no_due_date">No due date</string>
+    <string name="toolbar_edit_activity">Edit Item</string>
 
     <string-array name="spin_priority">
         <item>No priority</item>
@@ -15,8 +17,6 @@
         <item>Medium priority</item>
         <item>Low priority</item>
     </string-array>
-
-    <string name="no_due_date">No due date</string>
 
     <string-array name="spin_date_1">
         <item>@string/no_due_date</item>

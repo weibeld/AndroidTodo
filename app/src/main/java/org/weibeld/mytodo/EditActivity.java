@@ -19,7 +19,10 @@ public class EditActivity extends AppCompatActivity {
         setContentView(R.layout.activity_edit);
 
         // Set Toolbar as the app bar (instead of default ActionBar)
-        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(R.string.toolbar_edit_activity);  // Setting the title in XML doesn't work
+        setSupportActionBar(toolbar);
+
 
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction().add(R.id.fragment_container, new FormFragment()).commit();
