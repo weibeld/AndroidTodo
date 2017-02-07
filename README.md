@@ -26,8 +26,9 @@ The following **optional** features are implemented:
 
 The following **additional** features are implemented:
 
-* [x] Use of a fragment for the input form which is used in both the MainActivity and EditActivity
-
+* [x] Use a fragment for the input form which is used in both the MainActivity and EditActivity
+* [x] Replace the [ActionBar](https://developer.android.com/reference/android/app/ActionBar.html) by the more modern [Toolbar](https://developer.android.com/reference/android/support/v7/widget/Toolbar.html)
+* [x] Set up the EditActivity as a [full-screen dialog](https://material.io/guidelines/components/dialogs.html#dialogs-full-screen-dialogs)
 
 ## Video Walkthrough 
 
@@ -51,8 +52,6 @@ GIF created with [LiceCap](http://www.cockos.com/licecap/).
     - A priority and/or a due date may be selected for each item, but this is optional to provide more flexibility
     - Very long and multi-line items are supported
 - **Ideas for next steps:**
-    - Make the EditActivity a fullscreen dialog according to https://material.io/guidelines/components/dialogs.html#dialogs-full-screen-dialogs
-    - Replace the ActionBar by a Toolbar
     - Make the ListView items selectable on long click and provide the actions "Delete" and "Mark as done" for the selected items
     - Swipe ListView items in order to "mark as done"
     - Additional activity that displays all the items that have been "marked as done"
