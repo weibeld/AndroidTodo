@@ -214,7 +214,6 @@ public class FormFragment extends Fragment {
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // TODO: if a date has been previously selected, set this date as the default date
             FormFragment f = (FormFragment) getActivity().getFragmentManager().findFragmentById(R.id.fragment_container);
             if (f.isDateSelectedInSpinner()) {
                 MyDate date = new MyDate((String) f.mSpinDate.getItemAtPosition(2));
