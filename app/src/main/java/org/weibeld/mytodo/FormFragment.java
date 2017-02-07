@@ -8,7 +8,6 @@ import android.app.Fragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -144,12 +143,12 @@ public class FormFragment extends Fragment {
 
         // Customise look and feel
         if (isInMainActivity()) {
-            rootView.findViewById(R.id.form_container).setBackgroundColor(Color.parseColor("#FFF9C4"));
+            rootView.findViewById(R.id.form_container).setBackgroundColor(getResources().getColor(android.R.color.background_light));
+            //rootView.findViewById(R.id.form_container).setBackgroundColor(Color.parseColor("#E1F5FE"));
             mButton.setText(R.string.button_add);
             mEditText.setHint(R.string.hint_new);
         }
         else if (isInEditActivity()) {
-            rootView.findViewById(R.id.form_container).setBackgroundColor(Color.TRANSPARENT);
             mButton.setText(R.string.button_save);
             mEditText.setHint(R.string.hint_edit);
         }
