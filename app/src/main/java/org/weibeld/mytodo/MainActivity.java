@@ -9,9 +9,14 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -60,19 +65,22 @@ public class MainActivity extends AppCompatActivity {
         mItemsAdapter = new TodoItemAdapter(this, mItems);
         mListView.setAdapter(mItemsAdapter);
         setupListViewListener();
+        // Set up contextual action mode (contextual action bar) when selecting multiple items
+        mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        mListView.setMultiChoiceModeListener(new TodoItemMultiChoiceModeListener());
     }
 
     private void setupListViewListener() {
         // Delete item on long click
-        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                cupboard().withDatabase(mDb).delete(mItems.get(position));  //  Delete from DB
-                mItems.remove(position);  // Delete from ArrayList
-                mItemsAdapter.notifyDataSetChanged();
-                return true;
-            }
-        });
+//        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+//            @Override
+//            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+//                cupboard().withDatabase(mDb).delete(mItems.get(position));  //  Delete from DB
+//                mItems.remove(position);  // Delete from ArrayList
+//                mItemsAdapter.notifyDataSetChanged();
+//                return true;
+//            }
+//        });
         // Launch EditActivity on short click
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -161,4 +169,49 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // MultiChoiceModeListener for the ListView used in the contextual action mode (initiated by
+    // selecting an item by a long click, then more items can be selected by short clicks). The
+    // contextual action mode overlays the app bar by the contextual action bar which is displayed
+    // as long as the contextual action mode is active.
+    private static class TodoItemMultiChoiceModeListener implements AbsListView.MultiChoiceModeListener {
+        // Called when the contextual action mode is initiated
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            // Inflate the menu for the contextual action bar
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.main_contextual, menu);
+            return true;
+        }
+
+        // Called when an item is selected/deselected
+        @Override
+        public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+            // e.g. update number of selected items in contextual action bar
+        }
+
+        // Called when an action (menu item) in the contextual action bar is clicked
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.action_delete:
+                    // Show dialog confirming deletion of selected items
+                    mode.finish();  // Exit the contextual action mode
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        // Called when exiting the contextual action mode (default action: deselect all items)
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+
+        }
+
+        // Called after a call to ActionMode.invalidate()
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            return false;
+        }
+    }
 }

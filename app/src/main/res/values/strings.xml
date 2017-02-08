@@ -15,6 +15,7 @@
     <string name="dialog_discard_pos">Discard</string>
     <string name="dialog_discard_neg">Cancel</string>
     <string name="toast_edits_saved">Edits saved.</string>
+    <string name="delete_items">Delete items</string>
 
     <string-array name="spin_priority">
         <item>No priority</item>
