@@ -1,6 +1,8 @@
 package org.weibeld.mytodo;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -9,6 +11,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -68,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
         // Set up contextual action mode (contextual action bar) when selecting multiple items
         mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         mListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+
             // Called when the contextual action mode is initiated
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -79,16 +83,15 @@ public class MainActivity extends AppCompatActivity {
             // Called when an item is selected/deselected
             @Override
             public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
-                // Newly selected/deselected item:            position
-                // Number of currently selected items:        mListView.getCheckedItemCount()
-                // Positions of all currently selected items: mListView.
                 int n = mListView.getCheckedItemCount();
+                String title;
                 if (n == 0)
-                    mode.setTitle("");
+                    title = "";
                 else if (n == 1)
-                    mode.setTitle(getString(R.string.title_select_1) + n + getString(R.string.title_select_2_sing));
+                    title = getString(R.string.context_title_1) + n + getString(R.string.context_title_2_singular);
                 else
-                    mode.setTitle(getString(R.string.title_select_1) + n + getString(R.string.title_select_2_plural));
+                    title = getString(R.string.context_title_1) + n + getString(R.string.context_title_2_plural);
+                mode.setTitle(title);
             }
 
             // Called when an action (menu item) in the contextual action bar is clicked
@@ -96,8 +99,7 @@ public class MainActivity extends AppCompatActivity {
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.action_delete:
-                        // Show dialog confirming deletion of selected items
-                        mode.finish();  // Exit the contextual action mode
+                        showDeletionConfirmationDialog(mode);
                         return true;
                     default:
                         return false;
@@ -118,17 +120,42 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void showDeletionConfirmationDialog(ActionMode mode) {
+        final ActionMode m = mode;
+        new AlertDialog.Builder(this).
+                setMessage(R.string.dialog_delete_items).
+                setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {}
+                }).
+                setPositiveButton(getString(R.string.delete), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteSelectedItems(mListView.getCheckedItemPositions());
+                        m.finish();
+                    }
+                }).
+                create().
+                show();
+    }
+
+    // Delete all the items which are selected. The argument is supposed to be the return value of
+    // ListView.getCheckedItemPositions().
+    private void deleteSelectedItems(SparseBooleanArray items) {
+        for (int i = 0; i < items.size(); i++)
+            if (items.valueAt(i)) deleteItemAtPosition(i);
+    }
+
+    // Delete the item at a specific position in the ListView
+    private void deleteItemAtPosition(int position) {
+        // Delete from database
+        cupboard().withDatabase(mDb).delete(mItems.get(position));
+        // Delete from ListView
+        mItems.remove(position);
+        mItemsAdapter.notifyDataSetChanged();
+    }
+
     private void setupListViewListener() {
-        // Delete item on long click
-//        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-//            @Override
-//            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-//                cupboard().withDatabase(mDb).delete(mItems.get(position));  //  Delete from DB
-//                mItems.remove(position);  // Delete from ArrayList
-//                mItemsAdapter.notifyDataSetChanged();
-//                return true;
-//            }
-//        });
         // Launch EditActivity on short click
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override

@@ -37,7 +37,7 @@ public class EditActivity extends AppCompatActivity {
         // Set Toolbar as the app bar (instead of default ActionBar)
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         // Possible Android bug: setting the title in XML doesn't work
-        toolbar.setTitle(R.string.toolbar_edit_activity);
+        toolbar.setTitle(R.string.title_edit_activity);
         setSupportActionBar(toolbar);
 
         // Set up action for the navigation item to the left of the title in the Toolbar
@@ -75,12 +75,12 @@ public class EditActivity extends AppCompatActivity {
         }
         else {
             new AlertDialog.Builder(this).
-                    setMessage(R.string.dialog_discard_msg).
-                    setNegativeButton(R.string.dialog_discard_neg, new DialogInterface.OnClickListener() {
+                    setMessage(R.string.dialog_discard_edits).
+                    setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {}
                     }).
-                    setPositiveButton(R.string.dialog_discard_pos, new DialogInterface.OnClickListener() {
+                    setPositiveButton(R.string.discard, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             //showToast(R.string.toast_no_changes);
