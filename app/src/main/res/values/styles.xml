@@ -14,6 +14,8 @@
         <item name="colorAccent">@color/colorAccent</item>
         <!-- To make the contextual action bar overlay the Toolbar instead of pushing it down -->
         <item name="windowActionModeOverlay">true</item>
+        <!-- Make the contextual action bar look the same as the Toolbar -->
+        <item name="android:actionModeBackground">@color/colorPrimary</item>
     </style>
 
 </resources>

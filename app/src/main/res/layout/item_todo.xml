@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Note: setting android:foreground to ?attr/selectableItemBackground is a trick to maintain the
+     ripple effect on a background that is manually coloured by setting android:background -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/list_item_selector">
+    android:background="@drawable/list_item_background_selector"
+    android:foreground="?attr/selectableItemBackground">
 
     <TextView
         android:id="@+id/tvText"
