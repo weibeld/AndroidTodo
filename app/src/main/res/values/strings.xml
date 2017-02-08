@@ -16,6 +16,9 @@
     <string name="dialog_discard_neg">Cancel</string>
     <string name="toast_edits_saved">Edits saved.</string>
     <string name="delete_items">Delete items</string>
+    <string name="title_select_1">"Selected "</string>
+    <string name="title_select_2_plural">" items&#8230;"</string>
+    <string name="title_select_2_sing">" item&#8230;"</string>
 
     <string-array name="spin_priority">
         <item>No priority</item>

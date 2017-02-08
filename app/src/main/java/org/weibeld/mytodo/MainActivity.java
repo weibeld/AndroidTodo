@@ -67,7 +67,55 @@ public class MainActivity extends AppCompatActivity {
         setupListViewListener();
         // Set up contextual action mode (contextual action bar) when selecting multiple items
         mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-        mListView.setMultiChoiceModeListener(new TodoItemMultiChoiceModeListener());
+        mListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+            // Called when the contextual action mode is initiated
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                // Inflate the menu for the contextual action bar
+                mode.getMenuInflater().inflate(R.menu.main_contextual, menu);
+                return true;
+            }
+
+            // Called when an item is selected/deselected
+            @Override
+            public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+                // Newly selected/deselected item:            position
+                // Number of currently selected items:        mListView.getCheckedItemCount()
+                // Positions of all currently selected items: mListView.
+                int n = mListView.getCheckedItemCount();
+                if (n == 0)
+                    mode.setTitle("");
+                else if (n == 1)
+                    mode.setTitle(getString(R.string.title_select_1) + n + getString(R.string.title_select_2_sing));
+                else
+                    mode.setTitle(getString(R.string.title_select_1) + n + getString(R.string.title_select_2_plural));
+            }
+
+            // Called when an action (menu item) in the contextual action bar is clicked
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.action_delete:
+                        // Show dialog confirming deletion of selected items
+                        mode.finish();  // Exit the contextual action mode
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+
+            // Called when exiting the contextual action mode (default action: deselect all items)
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+
+            }
+
+            // Called after a call to ActionMode.invalidate()
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                return false;
+            }
+        });
     }
 
     private void setupListViewListener() {
@@ -174,6 +222,7 @@ public class MainActivity extends AppCompatActivity {
     // contextual action mode overlays the app bar by the contextual action bar which is displayed
     // as long as the contextual action mode is active.
     private static class TodoItemMultiChoiceModeListener implements AbsListView.MultiChoiceModeListener {
+        private final String LOG_TAG = TodoItemMultiChoiceModeListener.class.getSimpleName();
         // Called when the contextual action mode is initiated
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -187,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
             // e.g. update number of selected items in contextual action bar
+
         }
 
         // Called when an action (menu item) in the contextual action bar is clicked
