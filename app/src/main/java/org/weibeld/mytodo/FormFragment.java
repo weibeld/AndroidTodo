@@ -178,13 +178,15 @@ public class FormFragment extends Fragment {
             // Add the new item to the database and to the ArrayList of the ListView
             cupboard().withDatabase(mDb).put(item);
             mMainActivity.mItemsAdapter.add(item);
+            mMainActivity.sortItems();
             mMainActivity.mItemsAdapter.notifyDataSetChanged();
             // Reset input fields
             mEditText.setText("");
             mSpinPrior.setSelection(0);
             if (isDateSelectedInSpinner()) resetDateSpinnerItems();
+            // TODO: define different scrolling behaviours depending on sort order
             // Scroll to end of list
-            mMainActivity.mListView.setSelection(mMainActivity.mItemsAdapter.getCount() - 1);
+            //mMainActivity.mListView.setSelection(mMainActivity.mItemsAdapter.getCount() - 1);
         }
         // If editing an item, send the modified item back to the MainActivity, which will save it
         else if (isInEditActivity()) {

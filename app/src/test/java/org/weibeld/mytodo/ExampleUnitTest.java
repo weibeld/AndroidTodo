@@ -50,4 +50,11 @@ public class ExampleUnitTest {
             assertEquals(date1.getTimestamp(), date2.getTimestamp());
         }
     }
+
+    @Test
+    public void foo() throws Exception {
+        Long l1 = null;
+        Long l2 = null;
+        System.out.println(l1 == l2);
+    }
 }

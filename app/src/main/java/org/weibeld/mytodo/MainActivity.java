@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
@@ -44,7 +45,14 @@ public class MainActivity extends AppCompatActivity {
     static final String EXTRA_CODE_ITEM_POS = "position";
     static final String EXTRA_CODE_ITEM = "item";
 
+    static final int SORT_CREATION_DATE_OLD_TOP = 0;
+    static final int SORT_CREATION_DATE_NEW_TOP = 1;
+    static final int SORT_ALPHABETICALLY = 2;
+    static final int SORT_PRIORITY = 3;
+    static final int SORT_DUE_DATE = 4;
+
     SQLiteDatabase mDb;
+    SharedPreferences mSharedPrefs;
 
     ArrayList<TodoItem> mItems;
     TodoItemAdapter mItemsAdapter;
@@ -53,6 +61,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
+        int sort = mSharedPrefs.getInt(getString(R.string.pref_key_sort), SORT_CREATION_DATE_OLD_TOP);
+        switch (sort) {
+            case SORT_CREATION_DATE_OLD_TOP:
+                menu.findItem(R.id.action_sort_creation_old_top).setChecked(true);
+                break;
+            case SORT_CREATION_DATE_NEW_TOP:
+                menu.findItem(R.id.action_sort_creation_new_top).setChecked(true);
+                break;
+            case SORT_ALPHABETICALLY:
+                menu.findItem(R.id.action_sort_alphabet).setChecked(true);
+                break;
+            case SORT_PRIORITY:
+                menu.findItem(R.id.action_sort_priority).setChecked(true);
+                break;
+            case SORT_DUE_DATE:
+                menu.findItem(R.id.action_sort_due).setChecked(true);
+                break;
+        }
         return true;
     }
 
@@ -69,12 +95,15 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mDb = (new TodoDatabaseHelper(this)).getWritableDatabase();
+        mSharedPrefs = getPreferences(Context.MODE_PRIVATE);
 
         mListView = (ListView) findViewById(R.id.lvItems);
         readItems();  // Initialises 'mItems'
         mItemsAdapter = new TodoItemAdapter(this, mItems);
         mListView.setAdapter(mItemsAdapter);
+        sortItems();
         setupListViewListener();
+
         // Set up contextual action mode (contextual action bar) when selecting multiple items
         mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         mListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
@@ -123,24 +152,63 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    public void sortItems() {
+        int sort = mSharedPrefs.getInt(getString(R.string.pref_key_sort), SORT_CREATION_DATE_OLD_TOP);
+        switch (sort) {
+            case SORT_CREATION_DATE_OLD_TOP:
+                Collections.sort(mItems, new CreationDateComparatorOldTop());
+                break;
+            case SORT_CREATION_DATE_NEW_TOP:
+                Collections.sort(mItems, new CreationDateComparatorNewTop());
+                break;
+            case SORT_ALPHABETICALLY:
+                Collections.sort(mItems, new AlphabeticComparator());
+                break;
+            case SORT_PRIORITY:
+                Collections.sort(mItems, new PriorityComparator());
+                break;
+            case SORT_DUE_DATE:
+                Collections.sort(mItems, new DueDateComparator());
+                break;
+        }
+        mItemsAdapter.notifyDataSetChanged();
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_sort_priority:
-                return true;
-            case R.id.action_sort_due:
-                return true;
-            case R.id.action_sort_creation:
-                Collections.sort(mItems, new CreationDateComparator());
-                mItemsAdapter.notifyDataSetChanged();
-                return true;
-            case R.id.action_sort_alphabet:
-                Collections.sort(mItems, new AlphabeticComparator());
-                mItemsAdapter.notifyDataSetChanged();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getGroupId() == R.id.action_group_sort) {
+            item.setChecked(true);
+            SharedPreferences.Editor e = mSharedPrefs.edit();
+            switch (item.getItemId()) {
+                case R.id.action_sort_priority:
+                    Collections.sort(mItems, new PriorityComparator());
+                    e.putInt(getString(R.string.pref_key_sort), SORT_PRIORITY);
+                    break;
+                case R.id.action_sort_due:
+                    Collections.sort(mItems, new DueDateComparator());
+                    e.putInt(getString(R.string.pref_key_sort), SORT_DUE_DATE);
+                    break;
+                case R.id.action_sort_creation_old_top:
+                    Collections.sort(mItems, new CreationDateComparatorOldTop());
+                    e.putInt(getString(R.string.pref_key_sort), SORT_CREATION_DATE_OLD_TOP);
+                    break;
+                case R.id.action_sort_creation_new_top:
+                    Collections.sort(mItems, new CreationDateComparatorNewTop());
+                    e.putInt(getString(R.string.pref_key_sort), SORT_CREATION_DATE_NEW_TOP);
+                    break;
+                case R.id.action_sort_alphabet:
+                    Collections.sort(mItems, new AlphabeticComparator());
+                    e.putInt(getString(R.string.pref_key_sort), SORT_ALPHABETICALLY);
+                    break;
+                default:
+                    e.apply();
+                    return super.onOptionsItemSelected(item);
+            }
+            mItemsAdapter.notifyDataSetChanged();
+            e.apply();
+            return true;
         }
+        return false;
     }
 
     private void showDeletionConfirmationDialog(ActionMode mode) {
@@ -197,6 +265,7 @@ public class MainActivity extends AppCompatActivity {
             int position = data.getExtras().getInt(EXTRA_CODE_ITEM_POS);
             cupboard().withDatabase(mDb).put(item);  // Update item in database
             mItems.set(position, item);  // Update item in ArrayList
+            sortItems();
             mItemsAdapter.notifyDataSetChanged();
         }
     }
@@ -264,17 +333,76 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public static class CreationDateComparator implements  Comparator<TodoItem> {
+    public static class CreationDateComparatorOldTop implements  Comparator<TodoItem> {
         @Override
         public int compare(TodoItem o1, TodoItem o2) {
-            return Long.signum(o1.creation_ts - o2.creation_ts);
+            return compareCreationDatesOldTop(o1, o2);
+        }
+    }
+
+    public static class CreationDateComparatorNewTop implements  Comparator<TodoItem> {
+        @Override
+        public int compare(TodoItem o1, TodoItem o2) {
+            return compareCreationDatesNewTop(o1, o2);
         }
     }
 
     public static class AlphabeticComparator implements Comparator<TodoItem> {
+        // Note: omit any secondary sort order in case that two strings are exactly equal
         @Override
         public int compare(TodoItem o1, TodoItem o2) {
             return o1.text.compareToIgnoreCase(o2.text);
         }
     }
+
+    public static class PriorityComparator implements Comparator<TodoItem> {
+        @Override
+        public int compare(TodoItem o1, TodoItem o2) {
+            if (o1.hasHigherPriority(o2))
+                return -1;
+            else if (o1.hasLowerPriority(o2))
+                return 1;
+            else {
+                if (o1.isMoreUrgent(o2))
+                    return -1;
+                else if (o1.isLessUrgent(o2))
+                    return 1;
+                else
+                    return compareCreationDatesOldTop(o1, o2);
+            }
+
+        }
+    }
+
+    public static class DueDateComparator implements Comparator<TodoItem> {
+        @Override
+        public int compare(TodoItem o1, TodoItem o2) {
+            if (o1.isMoreUrgent(o2))
+                return -1;
+            else if (o1.isLessUrgent(o2))
+                return 1;
+            else {
+                if (o1.hasHigherPriority(o2))
+                    return -1;
+                else if (o1.hasLowerPriority(o2))
+                    return 1;
+                else
+                    return compareCreationDatesOldTop(o1, o2);
+            }
+        }
+    }
+
+    private static int compareCreationDatesOldTop(TodoItem o1, TodoItem o2) {
+        if (o1.isOlder(o2))
+            return -1;
+        else if (o1.isYounger(o2))
+            return 1;
+        else
+            return 0;
+    }
+
+    private static int compareCreationDatesNewTop(TodoItem o1, TodoItem o2) {
+        return -1 * compareCreationDatesOldTop(o1, o2);
+    }
+
 }

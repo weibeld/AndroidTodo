@@ -18,7 +18,8 @@
     <string name="item_no_date">No due date</string>
     <string name="action_sort_priority">Sort by priority</string>
     <string name="action_sort_due">Sort by due date</string>
-    <string name="action_sort_creation">Sort by creation date</string>
+    <string name="action_sort_creation_old_top">Sort by creation date \u2193</string>
+    <string name="action_sort_creation_new_top">Sort by creation date \u2191</string>
     <string name="action_sort_alphabet">Sort alphabetically</string>
 
     <!-- Simpel one-word strings -->
@@ -53,4 +54,6 @@
         <item>Change due date&#8230;</item>
     </string-array>
 
+    <!-- SharedPferences keys -->
+    <string name="pref_key_sort" translatable="false">sort_order</string>
 </resources>
