@@ -13,7 +13,13 @@
     <string name="toast_edits_saved">Edits saved.</string>
     <string name="action_delete">Delete items</string>
     <string name="dialog_delete_items">Delete selected items?</string>
+    <string name="action_sort">Sort&#8230;</string>
     <string name="label_creation_date">Created: %1$s</string>
+    <string name="item_no_date">No due date</string>
+    <string name="action_sort_priority">Sort by priority</string>
+    <string name="action_sort_due">Sort by due date</string>
+    <string name="action_sort_creation">Sort by creation date</string>
+    <string name="action_sort_alphabet">Sort alphabetically</string>
 
     <!-- Simpel one-word strings -->
     <string name="save">Save</string>
@@ -47,5 +53,4 @@
         <item>Change due date&#8230;</item>
     </string-array>
 
-    <string name="item_no_date">No due date</string>
 </resources>

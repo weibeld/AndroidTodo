@@ -15,7 +15,6 @@ import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -30,6 +29,8 @@ import org.weibeld.mytodo.data.TodoItem;
 import org.weibeld.mytodo.util.MyDate;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 import nl.qbusict.cupboard.QueryResultIterable;
 
@@ -48,6 +49,12 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<TodoItem> mItems;
     TodoItemAdapter mItemsAdapter;
     ListView mListView;
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,6 +121,26 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_sort_priority:
+                return true;
+            case R.id.action_sort_due:
+                return true;
+            case R.id.action_sort_creation:
+                Collections.sort(mItems, new CreationDateComparator());
+                mItemsAdapter.notifyDataSetChanged();
+                return true;
+            case R.id.action_sort_alphabet:
+                Collections.sort(mItems, new AlphabeticComparator());
+                mItemsAdapter.notifyDataSetChanged();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void showDeletionConfirmationDialog(ActionMode mode) {
@@ -237,51 +264,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // MultiChoiceModeListener for the ListView used in the contextual action mode (initiated by
-    // selecting an item by a long click, then more items can be selected by short clicks). The
-    // contextual action mode overlays the app bar by the contextual action bar which is displayed
-    // as long as the contextual action mode is active.
-    private static class TodoItemMultiChoiceModeListener implements AbsListView.MultiChoiceModeListener {
-        private final String LOG_TAG = TodoItemMultiChoiceModeListener.class.getSimpleName();
-        // Called when the contextual action mode is initiated
+    public static class CreationDateComparator implements  Comparator<TodoItem> {
         @Override
-        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-            // Inflate the menu for the contextual action bar
-            MenuInflater inflater = mode.getMenuInflater();
-            inflater.inflate(R.menu.main_contextual, menu);
-            return true;
+        public int compare(TodoItem o1, TodoItem o2) {
+            return Long.signum(o1.creation_ts - o2.creation_ts);
         }
+    }
 
-        // Called when an item is selected/deselected
+    public static class AlphabeticComparator implements Comparator<TodoItem> {
         @Override
-        public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
-            // e.g. update number of selected items in contextual action bar
-
-        }
-
-        // Called when an action (menu item) in the contextual action bar is clicked
-        @Override
-        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-            switch (item.getItemId()) {
-                case R.id.action_delete:
-                    // Show dialog confirming deletion of selected items
-                    mode.finish();  // Exit the contextual action mode
-                    return true;
-                default:
-                    return false;
-            }
-        }
-
-        // Called when exiting the contextual action mode (default action: deselect all items)
-        @Override
-        public void onDestroyActionMode(ActionMode mode) {
-
-        }
-
-        // Called after a call to ActionMode.invalidate()
-        @Override
-        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-            return false;
+        public int compare(TodoItem o1, TodoItem o2) {
+            return o1.text.compareToIgnoreCase(o2.text);
         }
     }
 }

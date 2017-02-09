@@ -18,4 +18,9 @@
         <item name="android:actionModeBackground">@color/colorPrimary</item>
     </style>
 
+    <!-- Dark action bar (dark BG/white text) but light overflow menu (light BG/black text) -->
+    <style name="ToolbarTheme" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
+    </style>
+
 </resources>

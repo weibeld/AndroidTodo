@@ -29,7 +29,7 @@ The following **additional** features are implemented:
 * [x] Use a fragment for the input form which is used in both the MainActivity and EditActivity
 * [x] Replace the [ActionBar](https://developer.android.com/reference/android/app/ActionBar.html) by the more modern [Toolbar](https://developer.android.com/reference/android/support/v7/widget/Toolbar.html)
 * [x] Set up the EditActivity as a [full-screen dialog](https://material.io/guidelines/components/dialogs.html#dialogs-full-screen-dialogs)
-* [x] Allow selection of multiple ListView items (initiated by a long-click) and provide the action "Delete" in the contextual action bar to delete the selected items
+* [x] Allow selection of multiple ListView items (initiated by a long-click) and provide the action "Delete" in the [contextual action bar](https://developer.android.com/guide/topics/ui/menus.html#CAB) to delete the selected items
 * [x] Save the creation date of each item in the database
 
 ## Video Walkthrough 
