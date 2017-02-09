@@ -8,10 +8,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.weibeld.mytodo.data.TodoItem;
 import org.weibeld.mytodo.util.MyDate;
+
+import java.text.SimpleDateFormat;
 
 public class EditActivity extends AppCompatActivity {
 
@@ -58,6 +61,10 @@ public class EditActivity extends AppCompatActivity {
                     showToast(R.string.toast_edits_saved);
             }
         });
+
+        TextView tvCreationDate = (TextView) findViewById(R.id.tvCreationDate);
+        String creationDate = new SimpleDateFormat("d/M/y, H:m (z)").format(mItem.creation_ts);
+        tvCreationDate.setText(String.format(getString(R.string.label_creation_date), creationDate));
     }
 
     // Called when the device back button is pressed for this activity (not keyboard)

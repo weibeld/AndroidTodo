@@ -1,27 +1,33 @@
 <resources>
     <string name="app_name">My Todo</string>
     <string name="button_add">Add Item</string>
-    <string name="button_save">Save</string>
     <string name="hint_new">Enter a new item</string>
     <string name="hint_edit">Describe your item</string>
     <string name="toast_enter_text">Please enter some text.</string>
-    <string name="priority_high">HIGH</string>
-    <string name="priority_medium">MEDIUM</string>
-    <string name="priority_low">LOW</string>
-    <string name="no_due_date">No due date</string>
+    <string name="label_priority_h">HIGH</string>
+    <string name="label_priority_m">MEDIUM</string>
+    <string name="label_priority_l">LOW</string>
     <string name="title_edit_activity">Edit Item</string>
     <string name="toast_no_changes">No changes applied</string>
     <string name="dialog_discard_edits">Discard current edits and go back to previous screen?</string>
-    <string name="discard">Discard</string>
     <string name="toast_edits_saved">Edits saved.</string>
     <string name="action_delete">Delete items</string>
-    <string name="context_title_1">"Selected "</string>
-    <string name="context_title_2_plural">" items&#8230;"</string>
-    <string name="context_title_2_singular">" item&#8230;"</string>
     <string name="dialog_delete_items">Delete selected items?</string>
+    <string name="label_creation_date">Created: %1$s</string>
+
+    <!-- Simpel one-word strings -->
+    <string name="save">Save</string>
+    <string name="discard">Discard</string>
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
 
+    <!-- Title of the contextual action bar -->
+    <plurals name="title_context_bar">
+        <item quantity="one">Selected %d item&#8230;</item>
+        <item quantity="other">Selected %d items&#8230;</item>
+    </plurals>
+
+    <!-- Content of the priority spinner -->
     <string-array name="spin_priority">
         <item>No priority</item>
         <item>High priority</item>
@@ -29,13 +35,17 @@
         <item>Low priority</item>
     </string-array>
 
+    <!-- Content of the due date spinner in its basic form -->
     <string-array name="spin_date_1">
-        <item>@string/no_due_date</item>
+        <item>@string/item_no_date</item>
         <item>Select due date&#8230;</item>
     </string-array>
 
+    <!-- First two items of the due date spinner in its extended form (third item will be date) -->
     <string-array name="spin_date_2">
-        <item>@string/no_due_date</item>
+        <item>@string/item_no_date</item>
         <item>Change due date&#8230;</item>
     </string-array>
+
+    <string name="item_no_date">No due date</string>
 </resources>

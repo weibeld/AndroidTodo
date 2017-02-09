@@ -49,6 +49,13 @@ public class MyDate {
         mTimestamp = timestamp;
     }
 
+    /**
+     * Create a MyDate object of the current date and time and default time zone.
+     */
+    public MyDate() {
+        mTimestamp = GregorianCalendar.getInstance().getTimeInMillis();
+    }
+
     // timestamp --> text
     @Override
     public String toString() {

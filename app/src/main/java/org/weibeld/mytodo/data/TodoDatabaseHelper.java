@@ -13,7 +13,7 @@ public class TodoDatabaseHelper extends SQLiteOpenHelper {
     private final String LOG_TAG = TodoDatabaseHelper.class.getSimpleName();
 
     // If the DB schema is changed (e.g. change column name), this version number must be updated
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     static final String DATABASE_NAME = "todo.db";
 
     public TodoDatabaseHelper(Context context) {

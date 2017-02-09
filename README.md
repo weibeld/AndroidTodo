@@ -29,6 +29,8 @@ The following **additional** features are implemented:
 * [x] Use a fragment for the input form which is used in both the MainActivity and EditActivity
 * [x] Replace the [ActionBar](https://developer.android.com/reference/android/app/ActionBar.html) by the more modern [Toolbar](https://developer.android.com/reference/android/support/v7/widget/Toolbar.html)
 * [x] Set up the EditActivity as a [full-screen dialog](https://material.io/guidelines/components/dialogs.html#dialogs-full-screen-dialogs)
+* [x] Allow selection of multiple ListView items (initiated by a long-click) and provide the action "Delete" in the contextual action bar to delete the selected items
+* [x] Save the creation date of each item in the database
 
 ## Video Walkthrough 
 
@@ -52,10 +54,8 @@ GIF created with [LiceCap](http://www.cockos.com/licecap/).
     - A priority and/or a due date may be selected for each item, but this is optional to provide more flexibility
     - Very long and multi-line items are supported
 - **Ideas for next steps:**
-    - Make the ListView items selectable on long click and provide the actions "Delete" and "Mark as done" for the selected items
     - Swipe ListView items in order to "mark as done"
     - Additional activity that displays all the items that have been "marked as done"
-    - Save creation date of each item in the database
     - Provide actions in the app bar for sorting the items:
         - By priority, then due date
         - By due date, then priority

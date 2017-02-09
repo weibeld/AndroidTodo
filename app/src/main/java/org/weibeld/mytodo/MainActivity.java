@@ -80,18 +80,14 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
 
-            // Called when an item is selected/deselected
+            // Called when an item is selected/deselected. Set title of contextual action bar.
             @Override
             public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
                 int n = mListView.getCheckedItemCount();
-                String title;
                 if (n == 0)
-                    title = "";
-                else if (n == 1)
-                    title = getString(R.string.context_title_1) + n + getString(R.string.context_title_2_singular);
+                    mode.setTitle("");
                 else
-                    title = getString(R.string.context_title_1) + n + getString(R.string.context_title_2_plural);
-                mode.setTitle(title);
+                    mode.setTitle(getResources().getQuantityString(R.plurals.title_context_bar, n, n));
             }
 
             // Called when an action (menu item) in the contextual action bar is clicked
@@ -139,19 +135,16 @@ public class MainActivity extends AppCompatActivity {
                 show();
     }
 
-    // Delete all the items which are selected. The argument is supposed to be the return value of
+    // Delete all the items that are selected. The argument is supposed to be the return value of
     // ListView.getCheckedItemPositions().
-    private void deleteSelectedItems(SparseBooleanArray items) {
-        for (int i = 0; i < items.size(); i++)
-            if (items.valueAt(i)) deleteItemAtPosition(i);
-    }
-
-    // Delete the item at a specific position in the ListView
-    private void deleteItemAtPosition(int position) {
-        // Delete from database
-        cupboard().withDatabase(mDb).delete(mItems.get(position));
-        // Delete from ListView
-        mItems.remove(position);
+    private void deleteSelectedItems(SparseBooleanArray selectedItems) {
+        ArrayList<TodoItem> itemsToDelete = new ArrayList<>();
+        for (int i = 0; i < selectedItems.size(); i++) {
+            TodoItem currentItem = mItems.get(selectedItems.keyAt(i));
+            cupboard().withDatabase(mDb).delete(currentItem);
+            itemsToDelete.add(currentItem);
+        }
+        mItems.removeAll(itemsToDelete);
         mItemsAdapter.notifyDataSetChanged();
     }
 
@@ -218,15 +211,15 @@ public class MainActivity extends AppCompatActivity {
             tvText.setText(item.text);
             switch (item.priority) {
                 case 1:
-                    tvPriority.setText(R.string.priority_high);
+                    tvPriority.setText(R.string.label_priority_h);
                     tvPriority.setTextColor(Color.RED);
                     break;
                 case 2:
-                    tvPriority.setText(R.string.priority_medium);
+                    tvPriority.setText(R.string.label_priority_m);
                     tvPriority.setTextColor(Color.parseColor("#FDE541"));  // Readable yellow
                     break;
                 case 3:
-                    tvPriority.setText(R.string.priority_low);
+                    tvPriority.setText(R.string.label_priority_l);
                     tvPriority.setTextColor(Color.GREEN);
                     break;
                 default:

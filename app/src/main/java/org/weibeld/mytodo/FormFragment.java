@@ -145,29 +145,37 @@ public class FormFragment extends Fragment {
         return rootView;
     }
 
-    // Action to take for saving an item. This method is either called on clicking the Save button
-    // of this form (in MainActivity), or the Save button in the Toolbar (in EditActivity).
+    // Action to take when the user initiates saving an item. Either called on clicking the Save
+    // button of this form (in MainActivity), or the Save button in the Toolbar (in EditActivity).
     // Returns true if the item can be successfully saved, and false if the item cannot be saved
     // because the input is invalid (e.g. empty text).
     public boolean onSaveClicked() {
+        // Check if the text field is non-empty
         if (mEditText.length() == 0) {
             Toast.makeText(getActivity(), R.string.toast_enter_text, Toast.LENGTH_SHORT).show();
             return false;
         }
+
+        // The TodoItem to create/edit
         TodoItem item = null;
         if      (mMainActivity != null) item = new TodoItem();
         else if (mEditActivity != null) item = mEditActivity.mItem;
 
-        // Set the item properties according to the input form fields
+        // Set the properties of the item according to the content of the form fields
         item.text = mEditText.getText().toString();
         item.priority = mSpinPrior.getSelectedItemPosition();
         if (mSpinDate.getSelectedItemPosition() == 2)
             item.due_ts = new MyDate((String) mSpinDate.getSelectedItem()).getTimestamp();
         else
             item.due_ts = null;
-
+        // Do not change the creation date if only editing the item
         if (isInMainActivity()) {
-            // Add the new item to the database and to the ArrayList
+            item.creation_ts = new MyDate().getTimestamp();
+        }
+
+        // If creating a new item, save it in the database and in the ListView
+        if (isInMainActivity()) {
+            // Add the new item to the database and to the ArrayList of the ListView
             cupboard().withDatabase(mDb).put(item);
             mMainActivity.mItemsAdapter.add(item);
             mMainActivity.mItemsAdapter.notifyDataSetChanged();
@@ -178,6 +186,7 @@ public class FormFragment extends Fragment {
             // Scroll to end of list
             mMainActivity.mListView.setSelection(mMainActivity.mItemsAdapter.getCount() - 1);
         }
+        // If editing an item, send the modified item back to the MainActivity, which will save it
         else if (isInEditActivity()) {
             Intent result = new Intent();
             result.putExtra(MainActivity.EXTRA_CODE_ITEM, item);
