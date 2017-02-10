@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -42,9 +41,10 @@ public class MainActivity extends AppCompatActivity {
     private final String LOG_TAG = MainActivity.class.getSimpleName();
 
     static final int REQUEST_CODE_EDIT = 1;
-    static final String EXTRA_CODE_ITEM_POS = "position";
-    static final String EXTRA_CODE_ITEM = "item";
+    static final String EXTRA_ITEM_POSITION = "position";
+    static final String EXTRA_ITEM = "item";
 
+    // Sort orders
     static final int SORT_CREATION_DATE_OLD_TOP = 0;
     static final int SORT_CREATION_DATE_NEW_TOP = 1;
     static final int SORT_ALPHABETICALLY = 2;
@@ -57,30 +57,6 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<TodoItem> mItems;
     TodoItemAdapter mItemsAdapter;
     ListView mListView;
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        int sort = mSharedPrefs.getInt(getString(R.string.pref_key_sort), SORT_CREATION_DATE_OLD_TOP);
-        switch (sort) {
-            case SORT_CREATION_DATE_OLD_TOP:
-                menu.findItem(R.id.action_sort_creation_old_top).setChecked(true);
-                break;
-            case SORT_CREATION_DATE_NEW_TOP:
-                menu.findItem(R.id.action_sort_creation_new_top).setChecked(true);
-                break;
-            case SORT_ALPHABETICALLY:
-                menu.findItem(R.id.action_sort_alphabet).setChecked(true);
-                break;
-            case SORT_PRIORITY:
-                menu.findItem(R.id.action_sort_priority).setChecked(true);
-                break;
-            case SORT_DUE_DATE:
-                menu.findItem(R.id.action_sort_due).setChecked(true);
-                break;
-        }
-        return true;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,16 +74,17 @@ public class MainActivity extends AppCompatActivity {
         mSharedPrefs = getPreferences(Context.MODE_PRIVATE);
 
         mListView = (ListView) findViewById(R.id.lvItems);
-        readItems();  // Initialises 'mItems'
+        // Initialise the ArrayList mItems by reading data from the database
+        readItems();
         mItemsAdapter = new TodoItemAdapter(this, mItems);
         mListView.setAdapter(mItemsAdapter);
+        // Sort the items according to the sort order saved in the SharedPreferences
         sortItems();
         setupListViewListener();
 
-        // Set up contextual action mode (contextual action bar) when selecting multiple items
+        // Set up contextual action mode (when selecting multiple items)
         mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
         mListView.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
-
             // Called when the contextual action mode is initiated
             @Override
             public boolean onCreateActionMode(ActionMode mode, Menu menu) {
@@ -152,9 +129,35 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void setupListViewListener() {
+        // Launch EditActivity on short click
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // Pass the selected item to the EditActivity, which will return the updated item
+                Intent intent = new Intent(getApplicationContext(), EditActivity.class);
+                intent.putExtra(EXTRA_ITEM, mItems.get(position));
+                intent.putExtra(EXTRA_ITEM_POSITION, position);
+                startActivityForResult(intent, REQUEST_CODE_EDIT);
+            }
+        });
+    }
+
+    // Initialise the 'mItems' ArrayList with all the TodoItems in the database
+    private void readItems() {
+        mItems = new ArrayList<>();
+        Cursor cursor = cupboard().withDatabase(mDb).query(TodoItem.class).getCursor();
+        try {
+            QueryResultIterable<TodoItem> iter = cupboard().withCursor(cursor).iterate(TodoItem.class);
+            for (TodoItem item : iter) mItems.add(item);
+        } finally {
+            cursor.close();
+        }
+    }
+
+    // Sort the items of the ListView according to one of the sort orders (the display is immediate)
     public void sortItems() {
-        int sort = mSharedPrefs.getInt(getString(R.string.pref_key_sort), SORT_CREATION_DATE_OLD_TOP);
-        switch (sort) {
+        switch (getCurrentSortOrder()) {
             case SORT_CREATION_DATE_OLD_TOP:
                 Collections.sort(mItems, new CreationDateComparatorOldTop());
                 break;
@@ -175,7 +178,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+        // Check the item of the "Sort" submenu that is currently set in the SharedPreferences
+        switch (getCurrentSortOrder()) {
+            case SORT_CREATION_DATE_OLD_TOP:
+                menu.findItem(R.id.action_sort_creation_old_top).setChecked(true);
+                break;
+            case SORT_CREATION_DATE_NEW_TOP:
+                menu.findItem(R.id.action_sort_creation_new_top).setChecked(true);
+                break;
+            case SORT_ALPHABETICALLY:
+                menu.findItem(R.id.action_sort_alphabet).setChecked(true);
+                break;
+            case SORT_PRIORITY:
+                menu.findItem(R.id.action_sort_priority).setChecked(true);
+                break;
+            case SORT_DUE_DATE:
+                menu.findItem(R.id.action_sort_due).setChecked(true);
+                break;
+        }
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        // If one of the items of the "Sort" submenu is selected, sort the elements of the ListView
+        // and save the newly selected sort order in the SharedPreferences
         if (item.getGroupId() == R.id.action_group_sort) {
             item.setChecked(true);
             SharedPreferences.Editor e = mSharedPrefs.edit();
@@ -204,13 +233,23 @@ public class MainActivity extends AppCompatActivity {
                     e.apply();
                     return super.onOptionsItemSelected(item);
             }
-            mItemsAdapter.notifyDataSetChanged();
             e.apply();
+            mItemsAdapter.notifyDataSetChanged();
+            mListView.setSelection(0);  // Scroll to the top of the list
             return true;
         }
         return false;
     }
 
+    // Return the sort order, according to the SORT_* constants defined in this activity, that is
+    // currently set in the SharedPreferences. Return SORT_CREATION_DATE_OLD_TOP as the default
+    // sort order in case no sort order is saved in the SharedPreferences yet (because the app has
+    // just been installed)
+    public int getCurrentSortOrder() {
+        return mSharedPrefs.getInt(getString(R.string.pref_key_sort), SORT_CREATION_DATE_OLD_TOP);
+    }
+
+    // Show a dialog for confirming the deletion of all the items selected in contextual action mode
     private void showDeletionConfirmationDialog(ActionMode mode) {
         final ActionMode m = mode;
         new AlertDialog.Builder(this).
@@ -230,8 +269,7 @@ public class MainActivity extends AppCompatActivity {
                 show();
     }
 
-    // Delete all the items that are selected. The argument is supposed to be the return value of
-    // ListView.getCheckedItemPositions().
+    // Delete all the items returned by ListView.getCheckedItemPositions()
     private void deleteSelectedItems(SparseBooleanArray selectedItems) {
         ArrayList<TodoItem> itemsToDelete = new ArrayList<>();
         for (int i = 0; i < selectedItems.size(); i++) {
@@ -243,49 +281,24 @@ public class MainActivity extends AppCompatActivity {
         mItemsAdapter.notifyDataSetChanged();
     }
 
-    private void setupListViewListener() {
-        // Launch EditActivity on short click
-        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // Pass the selected item to the EditActivity, which will return the updated item
-                Intent intent = new Intent(getApplicationContext(), EditActivity.class);
-                intent.putExtra(EXTRA_CODE_ITEM, mItems.get(position));
-                intent.putExtra(EXTRA_CODE_ITEM_POS, position);
-                startActivityForResult(intent, REQUEST_CODE_EDIT);
-            }
-        });
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // Replace the old version of the item with the edited one
-        if (resultCode == RESULT_OK && requestCode == REQUEST_CODE_EDIT) {
-            TodoItem item = (TodoItem) data.getExtras().get(EXTRA_CODE_ITEM);
-            int position = data.getExtras().getInt(EXTRA_CODE_ITEM_POS);
-            cupboard().withDatabase(mDb).put(item);  // Update item in database
-            mItems.set(position, item);  // Update item in ArrayList
+        // When the EditActivity sends a modified TodoItem back to the MainActivity
+        if (requestCode == REQUEST_CODE_EDIT && resultCode == RESULT_OK) {
+            TodoItem item = (TodoItem) data.getExtras().get(EXTRA_ITEM);
+            // Update the edited item in the database
+            cupboard().withDatabase(mDb).put(item);
+            // Update the edited item in the ListView
+            mItems.set(data.getExtras().getInt(EXTRA_ITEM_POSITION), item);
             sortItems();
             mItemsAdapter.notifyDataSetChanged();
         }
     }
 
-    // Initialise the 'mItems' ArrayList with all the items in the database
-    private void readItems() {
-        mItems = new ArrayList<>();
-        Cursor cursor = cupboard().withDatabase(mDb).query(TodoItem.class).getCursor();
-        try {
-            QueryResultIterable<TodoItem> iter = cupboard().withCursor(cursor).iterate(TodoItem.class);
-            for (TodoItem item : iter) mItems.add(item);
-        } finally {
-            cursor.close();
-        }
-    }
-
     /**
-     * Custom ArrayAdapter for displaying an item in the ListView.
+     * Custom ArrayAdapter for displaying a TodoItem in the ListView.
      */
-    public static class TodoItemAdapter extends ArrayAdapter<TodoItem> {
+    public class TodoItemAdapter extends ArrayAdapter<TodoItem> {
 
         private final String LOG_TAG = TodoItemAdapter.class.getSimpleName();
 
@@ -304,35 +317,40 @@ public class MainActivity extends AppCompatActivity {
             TextView tvPriority = (TextView) convertView.findViewById(R.id.tvPriority);
             TextView tvDate = (TextView) convertView.findViewById(R.id.tvDate);
 
+            // Set text
             tvText.setText(item.text);
+
+            // Set priority (if any)
             switch (item.priority) {
                 case 1:
                     tvPriority.setText(R.string.label_priority_h);
-                    tvPriority.setTextColor(Color.RED);
+                    tvPriority.setTextColor(getResources().getColor(R.color.priorityHigh));
                     break;
                 case 2:
                     tvPriority.setText(R.string.label_priority_m);
-                    tvPriority.setTextColor(Color.parseColor("#FDE541"));  // Readable yellow
+                    tvPriority.setTextColor(getResources().getColor(R.color.priorityMedium));
                     break;
                 case 3:
                     tvPriority.setText(R.string.label_priority_l);
-                    tvPriority.setTextColor(Color.GREEN);
+                    tvPriority.setTextColor(getResources().getColor(R.color.priorityLow));
                     break;
                 default:
                     tvPriority.setText("");
             }
 
+            // Set due date (if any)
             if (item.due_ts == null)
                 tvDate.setText("");
-            else {
-                MyDate date = new MyDate(item.due_ts);
-                tvDate.setText(date.toString());
-                tvDate.setTextColor(Color.GRAY);
-            }
+            else
+                tvDate.setText(new MyDate(item.due_ts).toString());
             return convertView;
         }
     }
 
+    /**
+     * Compare two TodoItems w.r.t. their creation date. A newer date is greater than (comes after)
+     * an older date.
+     */
     public static class CreationDateComparatorOldTop implements  Comparator<TodoItem> {
         @Override
         public int compare(TodoItem o1, TodoItem o2) {
@@ -340,6 +358,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Compare two TodoItems w.r.t. their creation date: a newer date is less than (comes before)
+     * an older date.
+     */
     public static class CreationDateComparatorNewTop implements  Comparator<TodoItem> {
         @Override
         public int compare(TodoItem o1, TodoItem o2) {
@@ -347,14 +369,25 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Compare two TodoItems w.r.t. their text in alphabetical order (case-insensitive)
+     */
     public static class AlphabeticComparator implements Comparator<TodoItem> {
-        // Note: omit any secondary sort order in case that two strings are exactly equal
+        // Note: omit any secondary sort order in case that two text fields are exactly equal
         @Override
         public int compare(TodoItem o1, TodoItem o2) {
             return o1.text.compareToIgnoreCase(o2.text);
         }
     }
 
+    /**
+     * Compare two TodoItems according to the following scheme:
+     *     - Priority (high > medium > low > none)
+     * In case of equal priority:
+     *     - Due date (smaller due date > larger due date > no due date)
+     * In case of equal due date:
+     *     - Creation date (larger creation date > smaller creation date (old on top))
+     */
     public static class PriorityComparator implements Comparator<TodoItem> {
         @Override
         public int compare(TodoItem o1, TodoItem o2) {
@@ -374,6 +407,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Compare two TodoItems according to the following scheme:
+     *     - Due date (smaller due date > larger due date > no due date)
+     * In case of equal due date:
+     *     - Priority (high > medium > low > none)
+     * In case of equal priority:
+     *     - Creation date (larger creation date > smaller creation date (old on top))
+     */
     public static class DueDateComparator implements Comparator<TodoItem> {
         @Override
         public int compare(TodoItem o1, TodoItem o2) {
@@ -392,6 +433,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    // Compare two TodoItems w.r.t. their creation date: larger (newer) date > smaller (older) date
     private static int compareCreationDatesOldTop(TodoItem o1, TodoItem o2) {
         if (o1.isOlder(o2))
             return -1;
@@ -401,8 +443,8 @@ public class MainActivity extends AppCompatActivity {
             return 0;
     }
 
+    // Compare two TodoItems w.r.t. their creation date: larger (newer) date < smaller (older) date
     private static int compareCreationDatesNewTop(TodoItem o1, TodoItem o2) {
         return -1 * compareCreationDatesOldTop(o1, o2);
     }
-
 }
