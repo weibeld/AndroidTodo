@@ -125,6 +125,7 @@ public class FormFragment extends Fragment {
 //            et.setTextColor(getResources().getColor(android.R.color.white));
 //            et.setHintTextColor(getResources().getColor(android.R.color.darker_gray));
             mButton.setText(R.string.button_add);
+            mButton.setText(R.string.button_add);
             mEditText.setHint(R.string.hint_new);
         }
         else if (isInEditActivity()) {

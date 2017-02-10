@@ -10,9 +10,9 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import org.weibeld.mytodo.data.TodoItem;
 import org.weibeld.mytodo.util.MyDate;
-import java.text.SimpleDateFormat;
 
 public class EditActivity extends AppCompatActivity {
 
@@ -61,7 +61,7 @@ public class EditActivity extends AppCompatActivity {
         });
 
         TextView tvCreationDate = (TextView) findViewById(R.id.tvCreationDate);
-        String creationDate = new SimpleDateFormat("d/M/y, H:m (z)").format(mItem.creation_ts);
+        String creationDate = new MyDate(mItem.creation_ts).formatLong();
         tvCreationDate.setText(String.format(getString(R.string.label_creation_date), creationDate));
     }
 

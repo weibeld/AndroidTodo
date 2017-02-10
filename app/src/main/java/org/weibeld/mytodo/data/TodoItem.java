@@ -1,5 +1,9 @@
 package org.weibeld.mytodo.data;
 
+import android.content.Context;
+
+import org.weibeld.mytodo.R;
+
 import java.io.Serializable;
 
 /**
@@ -47,5 +51,14 @@ public class TodoItem implements Serializable {
 
     public boolean isYounger(TodoItem other) {
         return this.creation_ts > other.creation_ts;
+    }
+
+    public String getPriorityString(Context c) {
+        switch (this.priority) {
+            case 1: return c.getString(R.string.label_priority_h);
+            case 2: return c.getString(R.string.label_priority_m);
+            case 3: return c.getString(R.string.label_priority_l);
+            default: return null;
+        }
     }
 }

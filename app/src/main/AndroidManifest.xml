@@ -18,6 +18,10 @@
         <activity
             android:name=".EditActivity">
         </activity>
+        <activity
+            android:name=".ArchiveActivity"
+            android:parentActivityName=".MainActivity">
+        </activity>
     </application>
 
 </manifest>

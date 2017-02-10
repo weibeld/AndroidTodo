@@ -24,6 +24,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.weibeld.mytodo.data.DoneItem;
 import org.weibeld.mytodo.data.TodoDatabaseHelper;
 import org.weibeld.mytodo.data.TodoItem;
 import org.weibeld.mytodo.util.MyDate;
@@ -110,6 +111,16 @@ public class MainActivity extends AppCompatActivity {
                     case R.id.action_delete:
                         showDeletionConfirmationDialog(mode);
                         return true;
+                    case R.id.action_done:
+                        // Create DoneItems from the TodoItems and insert them in the DoneItem table
+                        ArrayList<TodoItem> selectedTodoItems = getSelectedItems();
+                        for (TodoItem todoItem : selectedTodoItems) {
+                            DoneItem doneItem = new DoneItem(todoItem);
+                            cupboard().withDatabase(mDb).put(doneItem);
+                        }
+                        // Delete the done TodoItems from the MainActivity and the TodoItem DB table
+                        deleteSelectedItems();
+                        mode.finish();
                     default:
                         return false;
                 }
@@ -238,7 +249,13 @@ public class MainActivity extends AppCompatActivity {
             mListView.setSelection(0);  // Scroll to the top of the list
             return true;
         }
-        return false;
+        else if (item.getItemId() == R.id.action_show_archive) {
+            // Launch ArchiveActivity
+            startActivity(new Intent(this, ArchiveActivity.class));
+            return true;
+        }
+        else
+            return false;
     }
 
     // Return the sort order, according to the SORT_* constants defined in this activity, that is
@@ -261,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
                 setPositiveButton(getString(R.string.delete), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        deleteSelectedItems(mListView.getCheckedItemPositions());
+                        deleteSelectedItems();
                         m.finish();
                     }
                 }).
@@ -269,14 +286,20 @@ public class MainActivity extends AppCompatActivity {
                 show();
     }
 
-    // Delete all the items returned by ListView.getCheckedItemPositions()
-    private void deleteSelectedItems(SparseBooleanArray selectedItems) {
-        ArrayList<TodoItem> itemsToDelete = new ArrayList<>();
-        for (int i = 0; i < selectedItems.size(); i++) {
-            TodoItem currentItem = mItems.get(selectedItems.keyAt(i));
-            cupboard().withDatabase(mDb).delete(currentItem);
-            itemsToDelete.add(currentItem);
-        }
+    // Return the list of all the items that are selected in the contextual action mode
+    private ArrayList<TodoItem> getSelectedItems() {
+        SparseBooleanArray itemPositions = mListView.getCheckedItemPositions();
+        ArrayList<TodoItem> items = new ArrayList<>();
+        for (int i = 0; i < itemPositions.size(); i++)
+            items.add(mItems.get(itemPositions.keyAt(i)));
+        return items;
+    }
+
+    // Delete all the items that are selected in the contextual action mode
+    private void deleteSelectedItems() {
+        ArrayList<TodoItem> itemsToDelete = getSelectedItems();
+        for (TodoItem item : itemsToDelete)
+            cupboard().withDatabase(mDb).delete(item);
         mItems.removeAll(itemsToDelete);
         mItemsAdapter.notifyDataSetChanged();
     }

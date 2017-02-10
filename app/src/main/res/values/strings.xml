@@ -4,9 +4,9 @@
     <string name="hint_new">Enter a new item</string>
     <string name="hint_edit">Describe your item</string>
     <string name="toast_enter_text">Please enter some text.</string>
-    <string name="label_priority_h">HIGH</string>
-    <string name="label_priority_m">MEDIUM</string>
-    <string name="label_priority_l">LOW</string>
+    <string name="label_priority_h">high</string>
+    <string name="label_priority_m">medium</string>
+    <string name="label_priority_l">low</string>
     <string name="title_edit_activity">Edit Item</string>
     <string name="toast_no_changes">No changes applied</string>
     <string name="dialog_discard_edits">Discard current edits and go back to previous screen?</string>
@@ -21,12 +21,20 @@
     <string name="action_sort_creation_old_top">Sort by creation date \u2193</string>
     <string name="action_sort_creation_new_top">Sort by creation date \u2191</string>
     <string name="action_sort_alphabet">Sort alphabetically</string>
+    <string name="action_done">Done</string>
+    <string name="action_show_archive">See done items</string>
+    <string name="archive_label_priority">Priority: %1$s</string>
+    <string name="archive_label_due_date">Due date: %1$s</string>
+    <string name="archive_label_creation_date">Created: %1$s</string>
+    <string name="archive_label_done_date">Done: %1$s</string>
+    <string name="title_archive_activity">Archive</string>
 
     <!-- Simpel one-word strings -->
     <string name="save">Save</string>
     <string name="discard">Discard</string>
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
+    <string name="dash">--</string>
 
     <!-- Title of the contextual action bar -->
     <plurals name="title_context_bar">

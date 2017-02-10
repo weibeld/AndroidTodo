@@ -12,7 +12,8 @@ import java.util.GregorianCalendar;
 public class MyDate {
 
     private long mTimestamp;
-    private SimpleDateFormat mDateFormat = new SimpleDateFormat("d/M/yy");
+    private SimpleDateFormat mFormatShort = new SimpleDateFormat("d/M/yy");
+    private SimpleDateFormat mFormatLong = new SimpleDateFormat("d/M/y, H:m (z)");
 
     // (y, m, d) --> timestamp
     /**
@@ -32,7 +33,7 @@ public class MyDate {
      */
     public MyDate(String str) {
         for (int i = 0; i < str.length()-1; i++) {
-            Date date = mDateFormat.parse(str, new ParsePosition(i));
+            Date date = mFormatShort.parse(str, new ParsePosition(i));
             if (date != null) {
                 mTimestamp = date.getTime();
                 return;
@@ -59,7 +60,15 @@ public class MyDate {
     // timestamp --> text
     @Override
     public String toString() {
-        return mDateFormat.format(mTimestamp);
+        return mFormatShort.format(mTimestamp);
+    }
+
+    public String formatShort() {
+        return this.toString();
+    }
+
+    public String formatLong() {
+        return mFormatLong.format(mTimestamp);
     }
 
     public long getTimestamp() {
