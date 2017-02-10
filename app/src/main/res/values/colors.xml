@@ -3,5 +3,11 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
-    <color name="colorAccentLight">#FCE4EC</color>
+
+    <color name="selectedItem">#24888888</color>
+
+    <color name="priorityHigh">#FFFF0000</color>
+    <color name="priorityMedium">#FFFDE541</color> <!-- Readable yellow: #FFFDE541 -->
+    <color name="priorityLow">#FF00FF00</color>
+    <color name="dueDate">#FF888888</color>
 </resources>

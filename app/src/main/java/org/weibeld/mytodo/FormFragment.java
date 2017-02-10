@@ -105,10 +105,8 @@ public class FormFragment extends Fragment {
                     datePicker.show(getFragmentManager(), "datePicker");
                 }
             }
-
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
+            public void onNothingSelected(AdapterView<?> parent) {}
         });
 
         // Set up the Save button of this form
@@ -121,8 +119,11 @@ public class FormFragment extends Fragment {
 
         // Customise look and feel of the fragment depending on the enclosing activity
         if (isInMainActivity()) {
-            rootView.findViewById(R.id.form_container).setBackgroundColor(getResources().getColor(android.R.color.background_light));
-            //rootView.findViewById(R.id.form_container).setBackgroundColor(Color.parseColor("#E1F5FE"));
+            rootView.findViewById(R.id.form_container).setBackgroundColor(getResources().getColor(android.R.color.white));
+//            rootView.findViewById(R.id.form_container).setBackgroundColor(getResources().getColor(R.color.colorPrimary));
+//            EditText et = (EditText) rootView.findViewById(R.id.etNewItem);
+//            et.setTextColor(getResources().getColor(android.R.color.white));
+//            et.setHintTextColor(getResources().getColor(android.R.color.darker_gray));
             mButton.setText(R.string.button_add);
             mEditText.setHint(R.string.hint_new);
         }
@@ -175,24 +176,25 @@ public class FormFragment extends Fragment {
 
         // If creating a new item, save it in the database and in the ListView
         if (isInMainActivity()) {
-            // Add the new item to the database and to the ArrayList of the ListView
+            // Save the new TodoItem in the database
             cupboard().withDatabase(mDb).put(item);
+            // Save the new TodoItem in the ListView of the MainActivity
             mMainActivity.mItemsAdapter.add(item);
             mMainActivity.sortItems();
             mMainActivity.mItemsAdapter.notifyDataSetChanged();
-            // Reset input fields
+            // Scroll to the newly added item
+            mMainActivity.mListView.setSelection(mMainActivity.mItemsAdapter.getPosition(item));
+            // Reset input fields of the input form
             mEditText.setText("");
             mSpinPrior.setSelection(0);
             if (isDateSelectedInSpinner()) resetDateSpinnerItems();
-            // TODO: define different scrolling behaviours depending on sort order
-            // Scroll to end of list
-            //mMainActivity.mListView.setSelection(mMainActivity.mItemsAdapter.getCount() - 1);
         }
-        // If editing an item, send the modified item back to the MainActivity, which will save it
+        // If editing an item, send the modified item back to MainActivity. Note: we can't update
+        // the item in the ListView of the MainActivity here, because the MainActivity is stopped.
         else if (isInEditActivity()) {
             Intent result = new Intent();
-            result.putExtra(MainActivity.EXTRA_CODE_ITEM, item);
-            result.putExtra(MainActivity.EXTRA_CODE_ITEM_POS, mEditActivity.mPosition);
+            result.putExtra(MainActivity.EXTRA_ITEM, item);
+            result.putExtra(MainActivity.EXTRA_ITEM_POSITION, mEditActivity.mPosition);
             mEditActivity.setResult(RESULT_OK, result);
             mEditActivity.finish();
         }
@@ -244,8 +246,7 @@ public class FormFragment extends Fragment {
     }
 
     /**
-     * Date picker dialog.
-     * Created by dw on 27/01/17.
+     * Simple data picker dialog.
      */
     public static class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 

@@ -10,10 +10,8 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import org.weibeld.mytodo.data.TodoItem;
 import org.weibeld.mytodo.util.MyDate;
-
 import java.text.SimpleDateFormat;
 
 public class EditActivity extends AppCompatActivity {
@@ -34,8 +32,8 @@ public class EditActivity extends AppCompatActivity {
         }
 
         // The TodoItem and position in the list passed from the MainActivity
-        mItem = (TodoItem) getIntent().getSerializableExtra(MainActivity.EXTRA_CODE_ITEM);
-        mPosition = getIntent().getIntExtra(MainActivity.EXTRA_CODE_ITEM_POS, 0);
+        mItem = (TodoItem) getIntent().getSerializableExtra(MainActivity.EXTRA_ITEM);
+        mPosition = getIntent().getIntExtra(MainActivity.EXTRA_ITEM_POSITION, 0);
 
         // Set Toolbar as the app bar (instead of default ActionBar)
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
