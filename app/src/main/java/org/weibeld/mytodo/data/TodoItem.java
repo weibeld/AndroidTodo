@@ -7,8 +7,8 @@ import org.weibeld.mytodo.R;
 import java.io.Serializable;
 
 /**
- * Data model of an item for Cupboard (translated to a table with columns corresponding to the
- * member fields of the class).
+ * Data model of a todo item as saved in the database. This class is translated to an SQLite table
+ * by Cupboard.
  */
 public class TodoItem implements Serializable {
 
@@ -19,6 +19,17 @@ public class TodoItem implements Serializable {
     public long creation_ts;    // Creation date, UNIX timestamp in ms
 
     public TodoItem() {}
+
+    /**
+     * Create a TodoItem from a DoneItem (used when putting back an item from "Done" to "Todo")
+     * @param doneItem The DoneItem to revert to a TodoItem
+     */
+    public TodoItem(DoneItem doneItem) {
+        this.text = doneItem.text;
+        this.priority = doneItem.priority;
+        this.due_ts = doneItem.due_ts;
+        this.creation_ts = doneItem.creation_ts;
+    }
 
     public boolean hasHigherPriority(TodoItem other) {
         if (this.priority == 1 && (other.priority == 2 || other.priority == 3 || other.priority == 0) ||
@@ -58,7 +69,7 @@ public class TodoItem implements Serializable {
             case 1: return c.getString(R.string.label_priority_h);
             case 2: return c.getString(R.string.label_priority_m);
             case 3: return c.getString(R.string.label_priority_l);
-            default: return null;
+            default: return c.getString(R.string.none);
         }
     }
 }

@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Locale;
 
 /**
  * A date that can be represented as a "d/m/yy" string or as a UNIX timestamp in milliseconds.
@@ -12,8 +13,10 @@ import java.util.GregorianCalendar;
 public class MyDate {
 
     private long mTimestamp;
-    private SimpleDateFormat mFormatShort = new SimpleDateFormat("d/M/yy");
-    private SimpleDateFormat mFormatLong = new SimpleDateFormat("d/M/y, H:m (z)");
+    private SimpleDateFormat mFormatDateShort = new SimpleDateFormat("d/M/yy", Locale.UK);
+    private SimpleDateFormat mFormatDateLong = new SimpleDateFormat("d/M/yyyy", Locale.UK);
+    private SimpleDateFormat mFormatDateDay = new SimpleDateFormat("d/M/y (EEEE)", Locale.UK);
+    private SimpleDateFormat mFormatDateDayTime = new SimpleDateFormat("d/M/y (EEEE) HH:mm", Locale.UK);
 
     // (y, m, d) --> timestamp
     /**
@@ -33,7 +36,7 @@ public class MyDate {
      */
     public MyDate(String str) {
         for (int i = 0; i < str.length()-1; i++) {
-            Date date = mFormatShort.parse(str, new ParsePosition(i));
+            Date date = mFormatDateShort.parse(str, new ParsePosition(i));
             if (date != null) {
                 mTimestamp = date.getTime();
                 return;
@@ -57,26 +60,45 @@ public class MyDate {
         mTimestamp = GregorianCalendar.getInstance().getTimeInMillis();
     }
 
-    // timestamp --> text
-    @Override
-    public String toString() {
-        return mFormatShort.format(mTimestamp);
+    /**
+     * Return a string of the date represented by this object in "d/m/y" format, e.g. "13/2/17".
+     */
+    public String formatDateShort() {
+        return mFormatDateShort.format(mTimestamp);
     }
 
-    public String formatShort() {
-        return this.toString();
+    /**
+     * Return a string of the date represented by this object in "d/m/yy" format, e.g. "13/2/2017".
+     */
+    public String formatDateLong() {
+        return mFormatDateLong.format(mTimestamp);
     }
 
-    public String formatLong() {
-        return mFormatLong.format(mTimestamp);
+    /**
+     * Return a string of the date represented by this object in "d/m/y (weekday)" format,
+     * e.g. "13/2/2017 (Monday)".
+     */
+    public String formatDateDay() {
+        return mFormatDateDay.format(mTimestamp);
     }
 
+    /**
+     * Return a string of the date represented by this object in "d/m/y (weekday) H:M" format,
+     * e.g. "13/2/2017 (Monday) 20:12".
+     */
+    public String formatDateDayTime() {
+        return mFormatDateDayTime.format(mTimestamp);
+    }
+
+    /**
+     * @return The UNIX timestamp in milliseconds of the date represented by this object.
+     */
     public long getTimestamp() {
         return mTimestamp;
     }
 
     /**
-     * @return the year, e.g. 2017
+     * @return the year of this date, e.g. 2017
      */
     public int getYear() {
         GregorianCalendar cal = new GregorianCalendar();
@@ -85,7 +107,7 @@ public class MyDate {
     }
 
     /**
-     * @return the month starting from 0 (i.e. 0-11)
+     * @return the month of this date starting from 0 (i.e. 0-11)
      */
     public int getMonth() {
         GregorianCalendar cal = new GregorianCalendar();
@@ -94,7 +116,7 @@ public class MyDate {
     }
 
     /**
-     * @return the day of the month (1-31)
+     * @return the day of the month of this date (1-31)
      */
     public int getDay() {
         GregorianCalendar cal = new GregorianCalendar();
@@ -102,6 +124,10 @@ public class MyDate {
             return cal.get(Calendar.DAY_OF_MONTH);
     }
 
+    /**
+     * Test if another MyDate object represents the same point in time as this object.
+     * @param obj Another MyDate object.
+     */
     @Override
     public boolean equals(Object obj) {
         return ((MyDate) obj).getTimestamp() == mTimestamp;

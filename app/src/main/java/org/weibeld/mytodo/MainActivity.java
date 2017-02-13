@@ -1,17 +1,12 @@
 package org.weibeld.mytodo;
 
-import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -28,6 +23,8 @@ import org.weibeld.mytodo.data.DoneItem;
 import org.weibeld.mytodo.data.TodoDatabaseHelper;
 import org.weibeld.mytodo.data.TodoItem;
 import org.weibeld.mytodo.util.MyDate;
+import org.weibeld.mytodo.util.MyListActivity;
+import org.weibeld.mytodo.util.Util;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -37,7 +34,7 @@ import nl.qbusict.cupboard.QueryResultIterable;
 
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends MyListActivity<TodoItem> {
 
     private final String LOG_TAG = MainActivity.class.getSimpleName();
 
@@ -52,12 +49,7 @@ public class MainActivity extends AppCompatActivity {
     static final int SORT_PRIORITY = 3;
     static final int SORT_DUE_DATE = 4;
 
-    SQLiteDatabase mDb;
     SharedPreferences mSharedPrefs;
-
-    ArrayList<TodoItem> mItems;
-    TodoItemAdapter mItemsAdapter;
-    ListView mListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,8 +69,8 @@ public class MainActivity extends AppCompatActivity {
         mListView = (ListView) findViewById(R.id.lvItems);
         // Initialise the ArrayList mItems by reading data from the database
         readItems();
-        mItemsAdapter = new TodoItemAdapter(this, mItems);
-        mListView.setAdapter(mItemsAdapter);
+        mAdapter = new TodoItemAdapter(this, mItems);
+        mListView.setAdapter(mAdapter);
         // Sort the items according to the sort order saved in the SharedPreferences
         sortItems();
         setupListViewListener();
@@ -109,18 +101,20 @@ public class MainActivity extends AppCompatActivity {
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.action_delete:
-                        showDeletionConfirmationDialog(mode);
+                        Util.confirmDeleteSelectedItems(getMyActivity(), mode);
                         return true;
                     case R.id.action_done:
                         // Create DoneItems from the TodoItems and insert them in the DoneItem table
-                        ArrayList<TodoItem> selectedTodoItems = getSelectedItems();
+                        ArrayList<TodoItem> selectedTodoItems = Util.getSelectedItems(getMyActivity());
                         for (TodoItem todoItem : selectedTodoItems) {
                             DoneItem doneItem = new DoneItem(todoItem);
                             cupboard().withDatabase(mDb).put(doneItem);
                         }
                         // Delete the done TodoItems from the MainActivity and the TodoItem DB table
-                        deleteSelectedItems();
+                        Util.deleteSelectedItems(getMyActivity());
                         mode.finish();
+                        String str = getResources().getQuantityString(R.plurals.toast_todo2done, selectedTodoItems.size(), selectedTodoItems.size());
+                        Util.toast(getMyActivity(), str);
                     default:
                         return false;
                 }
@@ -147,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // Pass the selected item to the EditActivity, which will return the updated item
                 Intent intent = new Intent(getApplicationContext(), EditActivity.class);
-                intent.putExtra(EXTRA_ITEM, mItems.get(position));
+                intent.putExtra(EXTRA_ITEM, (TodoItem) mItems.get(position));
                 intent.putExtra(EXTRA_ITEM_POSITION, position);
                 startActivityForResult(intent, REQUEST_CODE_EDIT);
             }
@@ -185,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
                 Collections.sort(mItems, new DueDateComparator());
                 break;
         }
-        mItemsAdapter.notifyDataSetChanged();
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -245,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
                     return super.onOptionsItemSelected(item);
             }
             e.apply();
-            mItemsAdapter.notifyDataSetChanged();
+            mAdapter.notifyDataSetChanged();
             mListView.setSelection(0);  // Scroll to the top of the list
             return true;
         }
@@ -266,44 +260,6 @@ public class MainActivity extends AppCompatActivity {
         return mSharedPrefs.getInt(getString(R.string.pref_key_sort), SORT_CREATION_DATE_OLD_TOP);
     }
 
-    // Show a dialog for confirming the deletion of all the items selected in contextual action mode
-    private void showDeletionConfirmationDialog(ActionMode mode) {
-        final ActionMode m = mode;
-        new AlertDialog.Builder(this).
-                setMessage(R.string.dialog_delete_items).
-                setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {}
-                }).
-                setPositiveButton(getString(R.string.delete), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        deleteSelectedItems();
-                        m.finish();
-                    }
-                }).
-                create().
-                show();
-    }
-
-    // Return the list of all the items that are selected in the contextual action mode
-    private ArrayList<TodoItem> getSelectedItems() {
-        SparseBooleanArray itemPositions = mListView.getCheckedItemPositions();
-        ArrayList<TodoItem> items = new ArrayList<>();
-        for (int i = 0; i < itemPositions.size(); i++)
-            items.add(mItems.get(itemPositions.keyAt(i)));
-        return items;
-    }
-
-    // Delete all the items that are selected in the contextual action mode
-    private void deleteSelectedItems() {
-        ArrayList<TodoItem> itemsToDelete = getSelectedItems();
-        for (TodoItem item : itemsToDelete)
-            cupboard().withDatabase(mDb).delete(item);
-        mItems.removeAll(itemsToDelete);
-        mItemsAdapter.notifyDataSetChanged();
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // When the EditActivity sends a modified TodoItem back to the MainActivity
@@ -314,7 +270,7 @@ public class MainActivity extends AppCompatActivity {
             // Update the edited item in the ListView
             mItems.set(data.getExtras().getInt(EXTRA_ITEM_POSITION), item);
             sortItems();
-            mItemsAdapter.notifyDataSetChanged();
+            mAdapter.notifyDataSetChanged();
         }
     }
 
@@ -365,7 +321,7 @@ public class MainActivity extends AppCompatActivity {
             if (item.due_ts == null)
                 tvDate.setText("");
             else
-                tvDate.setText(new MyDate(item.due_ts).toString());
+                tvDate.setText(new MyDate(item.due_ts).formatDateShort());
             return convertView;
         }
     }

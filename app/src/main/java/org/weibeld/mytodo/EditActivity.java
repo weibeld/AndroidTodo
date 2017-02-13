@@ -9,10 +9,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.weibeld.mytodo.data.TodoItem;
 import org.weibeld.mytodo.util.MyDate;
+import org.weibeld.mytodo.util.Util;
 
 public class EditActivity extends AppCompatActivity {
 
@@ -20,6 +20,7 @@ public class EditActivity extends AppCompatActivity {
 
     TodoItem mItem;
     int mPosition;
+    EditActivity mActivity;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,6 +31,8 @@ public class EditActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             getFragmentManager().beginTransaction().add(R.id.fragment_container, new FormFragment()).commit();
         }
+
+        mActivity = this;
 
         // The TodoItem and position in the list passed from the MainActivity
         mItem = (TodoItem) getIntent().getSerializableExtra(MainActivity.EXTRA_ITEM);
@@ -56,12 +59,12 @@ public class EditActivity extends AppCompatActivity {
                 FormFragment f = (FormFragment) getFragmentManager().findFragmentById(R.id.fragment_container);
                 if (f.onSaveClicked())
                     hideKeyboardIfPresent();
-                    showToast(R.string.toast_edits_saved);
+                    Util.toast(mActivity, getString(R.string.toast_edits_saved));
             }
         });
 
         TextView tvCreationDate = (TextView) findViewById(R.id.tvCreationDate);
-        String creationDate = new MyDate(mItem.creation_ts).formatLong();
+        String creationDate = new MyDate(mItem.creation_ts).formatDateDayTime();
         tvCreationDate.setText(String.format(getString(R.string.label_creation_date), creationDate));
     }
 
@@ -132,7 +135,4 @@ public class EditActivity extends AppCompatActivity {
         imm.hideSoftInputFromWindow(findViewById(R.id.etNewItem).getWindowToken(), 0);
     }
 
-    private void showToast(int msgStr) {
-        Toast.makeText(this, msgStr, Toast.LENGTH_SHORT).show();
-    }
 }

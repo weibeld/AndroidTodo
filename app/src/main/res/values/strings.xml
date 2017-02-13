@@ -4,9 +4,9 @@
     <string name="hint_new">Enter a new item</string>
     <string name="hint_edit">Describe your item</string>
     <string name="toast_enter_text">Please enter some text.</string>
-    <string name="label_priority_h">high</string>
-    <string name="label_priority_m">medium</string>
-    <string name="label_priority_l">low</string>
+    <string name="label_priority_h">High</string>
+    <string name="label_priority_m">Medium</string>
+    <string name="label_priority_l">Low</string>
     <string name="title_edit_activity">Edit Item</string>
     <string name="toast_no_changes">No changes applied</string>
     <string name="dialog_discard_edits">Discard current edits and go back to previous screen?</string>
@@ -22,7 +22,7 @@
     <string name="action_sort_creation_new_top">Sort by creation date \u2191</string>
     <string name="action_sort_alphabet">Sort alphabetically</string>
     <string name="action_done">Done</string>
-    <string name="action_show_archive">See done items</string>
+    <string name="action_show_archive">Show Archive</string>
     <string name="archive_label_priority">Priority: %1$s</string>
     <string name="archive_label_due_date">Due date: %1$s</string>
     <string name="archive_label_creation_date">Created: %1$s</string>
@@ -34,12 +34,22 @@
     <string name="discard">Discard</string>
     <string name="cancel">Cancel</string>
     <string name="delete">Delete</string>
-    <string name="dash">--</string>
+    <string name="none">None</string>
 
     <!-- Title of the contextual action bar -->
     <plurals name="title_context_bar">
         <item quantity="one">Selected %d item&#8230;</item>
         <item quantity="other">Selected %d items&#8230;</item>
+    </plurals>
+
+    <plurals name="toast_todo2done">
+        <item quantity="one">Marked %d item as done (moved to archive).</item>
+        <item quantity="other">Marked %d items as done (moved to archive).</item>
+    </plurals>
+
+    <plurals name="toast_done2todo">
+        <item quantity="one">Moved %d item back to the todo list.</item>
+        <item quantity="other">Moved %d items back to the todo list.</item>
     </plurals>
 
     <!-- Content of the priority spinner -->
@@ -64,4 +74,5 @@
 
     <!-- SharedPferences keys -->
     <string name="pref_key_sort" translatable="false">sort_order</string>
+    <string name="action_put_back">Put Back to Todo List</string>
 </resources>

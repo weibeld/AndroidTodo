@@ -22,35 +22,27 @@
         android:textAppearance="?android:attr/textAppearanceListItemSmall" />
 
     <TextView
+        android:id="@+id/tvCreationDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        style="@style/SecondaryText" />
+
+    <TextView
         android:id="@+id/tvPriority"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textStyle="italic"
-        android:textSize="14sp" />
+        style="@style/SecondaryText" />
 
     <TextView
         android:id="@+id/tvDueDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textStyle="italic"
-        android:textSize="14sp" />
-
-    <TextView
-        android:id="@+id/tvCreationDate"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textStyle="italic"
-        android:textSize="14sp" />
+        style="@style/SecondaryText" />
 
     <TextView
         android:id="@+id/tvDoneDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:textStyle="italic"
-        android:textSize="14sp" />
+        style="@style/SecondaryText" />
 
 </LinearLayout>

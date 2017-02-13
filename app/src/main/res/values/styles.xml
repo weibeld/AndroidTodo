@@ -18,9 +18,16 @@
         <item name="android:actionModeBackground">@color/colorPrimary</item>
     </style>
 
-    <!-- Dark action bar (dark BG/white text) but light overflow menu (light BG/black text) -->
+    <!-- Theme for a dark Toolbar (white on black) but with light popup menus (black on white) -->
     <style name="ToolbarTheme" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
         <item name="popupTheme">@style/ThemeOverlay.AppCompat.Light</item>
+    </style>
+
+    <!-- TextView style for secondary text (additional information other than main content) -->
+    <style name="SecondaryText" parent="android:Widget.TextView">
+        <item name="android:textAppearance">?android:attr/textAppearanceSmall</item>
+        <item name="android:textStyle">italic</item>
+        <item name="android:textSize">14sp</item>
     </style>
 
 </resources>

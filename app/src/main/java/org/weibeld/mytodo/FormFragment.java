@@ -180,11 +180,11 @@ public class FormFragment extends Fragment {
             // Save the new TodoItem in the database
             cupboard().withDatabase(mDb).put(item);
             // Save the new TodoItem in the ListView of the MainActivity
-            mMainActivity.mItemsAdapter.add(item);
+            mMainActivity.getAdapter().add(item);
             mMainActivity.sortItems();
-            mMainActivity.mItemsAdapter.notifyDataSetChanged();
+            mMainActivity.getAdapter().notifyDataSetChanged();
             // Scroll to the newly added item
-            mMainActivity.mListView.setSelection(mMainActivity.mItemsAdapter.getPosition(item));
+            mMainActivity.getListView().setSelection(mMainActivity.getAdapter().getPosition(item));
             // Reset input fields of the input form
             mEditText.setText("");
             mSpinPrior.setSelection(0);
@@ -243,7 +243,7 @@ public class FormFragment extends Fragment {
 
     // Construct the string for the <date> spinner item (position 2)
     private String getDueDateSpinnerString(MyDate date) {
-        return "Due " + date.toString();
+        return "Due " + date.formatDateShort();
     }
 
     /**
