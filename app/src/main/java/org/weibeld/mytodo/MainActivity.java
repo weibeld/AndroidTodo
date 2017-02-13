@@ -1,6 +1,8 @@
 package org.weibeld.mytodo;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -18,6 +20,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.weibeld.mytodo.data.DoneItem;
 import org.weibeld.mytodo.data.TodoDatabaseHelper;
 import org.weibeld.mytodo.data.TodoItem;
 import org.weibeld.mytodo.util.MyDate;
@@ -218,8 +221,11 @@ public class MainActivity extends MyListActivity<TodoItem> {
             return true;
         }
         else if (item.getItemId() == R.id.action_show_archive) {
-            // Launch ArchiveActivity
             startActivity(new Intent(this, ArchiveActivity.class));
+            return true;
+        }
+        else if (item.getItemId() == R.id.action_erase_data) {
+            confirmEraseData();
             return true;
         }
         else
@@ -232,6 +238,29 @@ public class MainActivity extends MyListActivity<TodoItem> {
     // just been installed)
     public int getCurrentSortOrder() {
         return mSharedPrefs.getInt(getString(R.string.pref_key_sort), SORT_CREATION_DATE_OLD_TOP);
+    }
+
+    // Show dialog for confirming to erase all the data
+    private void confirmEraseData() {
+        new AlertDialog.Builder(this).
+                setMessage(R.string.dialog_erase_data_msg).
+                setTitle(R.string.dialog_erase_data_title).
+                setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {}
+                }).
+                setPositiveButton(getString(R.string.erase), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // Delete all the items from the database and the ListView of MainActivity
+                        cupboard().withDatabase(mDb).delete(TodoItem.class, null);
+                        cupboard().withDatabase(mDb).delete(DoneItem.class, null);
+                        mAdapter.clear();
+                        mAdapter.notifyDataSetChanged();
+                    }
+                }).
+                create().
+                show();
     }
 
     @Override

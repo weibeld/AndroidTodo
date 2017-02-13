@@ -33,9 +33,16 @@
             </group>
         </menu>
     </item>
+
     <item
         android:id="@+id/action_show_archive"
         android:title="@string/action_show_archive"
+        app:showAsAction="never">
+    </item>
+
+    <item
+        android:id="@+id/action_erase_data"
+        android:title="@string/action_erase_data"
         app:showAsAction="never">
     </item>
 </menu>
