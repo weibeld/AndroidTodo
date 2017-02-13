@@ -3,7 +3,6 @@ package org.weibeld.mytodo;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.Toolbar;
@@ -19,7 +18,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.weibeld.mytodo.data.DoneItem;
 import org.weibeld.mytodo.data.TodoDatabaseHelper;
 import org.weibeld.mytodo.data.TodoItem;
 import org.weibeld.mytodo.util.MyDate;
@@ -29,8 +27,6 @@ import org.weibeld.mytodo.util.Util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-
-import nl.qbusict.cupboard.QueryResultIterable;
 
 import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
@@ -67,8 +63,7 @@ public class MainActivity extends MyListActivity<TodoItem> {
         mSharedPrefs = getPreferences(Context.MODE_PRIVATE);
 
         mListView = (ListView) findViewById(R.id.lvItems);
-        // Initialise the ArrayList mItems by reading data from the database
-        readItems();
+        mItems = Util.readItemsFromDb(mActivity);
         mAdapter = new TodoItemAdapter(this, mItems);
         mListView.setAdapter(mAdapter);
         // Sort the items according to the sort order saved in the SharedPreferences
@@ -104,17 +99,8 @@ public class MainActivity extends MyListActivity<TodoItem> {
                         Util.confirmDeleteSelectedItems(getMyActivity(), mode);
                         return true;
                     case R.id.action_done:
-                        // Create DoneItems from the TodoItems and insert them in the DoneItem table
-                        ArrayList<TodoItem> selectedTodoItems = Util.getSelectedItems(getMyActivity());
-                        for (TodoItem todoItem : selectedTodoItems) {
-                            DoneItem doneItem = new DoneItem(todoItem);
-                            cupboard().withDatabase(mDb).put(doneItem);
-                        }
-                        // Delete the done TodoItems from the MainActivity and the TodoItem DB table
-                        Util.deleteSelectedItems(getMyActivity());
-                        mode.finish();
-                        String str = getResources().getQuantityString(R.plurals.toast_todo2done, selectedTodoItems.size(), selectedTodoItems.size());
-                        Util.toast(getMyActivity(), str);
+                        Util.moveSelectedItems(getMyActivity(), mode);
+                        return true;
                     default:
                         return false;
                 }
@@ -146,18 +132,6 @@ public class MainActivity extends MyListActivity<TodoItem> {
                 startActivityForResult(intent, REQUEST_CODE_EDIT);
             }
         });
-    }
-
-    // Initialise the 'mItems' ArrayList with all the TodoItems in the database
-    private void readItems() {
-        mItems = new ArrayList<>();
-        Cursor cursor = cupboard().withDatabase(mDb).query(TodoItem.class).getCursor();
-        try {
-            QueryResultIterable<TodoItem> iter = cupboard().withCursor(cursor).iterate(TodoItem.class);
-            for (TodoItem item : iter) mItems.add(item);
-        } finally {
-            cursor.close();
-        }
     }
 
     // Sort the items of the ListView according to one of the sort orders (the display is immediate)

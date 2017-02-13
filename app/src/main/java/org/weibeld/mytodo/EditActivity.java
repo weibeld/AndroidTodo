@@ -127,7 +127,7 @@ public class EditActivity extends AppCompatActivity {
         return date1.equals(date2);
     }
 
-    // Hide the soft keyboard if it is currently displayed. This should be called immediaely before
+    // Hide the soft keyboard if it is currently displayed. This should be called immediately before
     // the activity is exited to prevent that the keyboard is still shown in the parent activity
     // for a short moment.
     private void hideKeyboardIfPresent() {

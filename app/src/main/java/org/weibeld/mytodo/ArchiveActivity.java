@@ -1,7 +1,6 @@
 package org.weibeld.mytodo;
 
 import android.content.Context;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -19,17 +18,12 @@ import android.widget.TextView;
 
 import org.weibeld.mytodo.data.DoneItem;
 import org.weibeld.mytodo.data.TodoDatabaseHelper;
-import org.weibeld.mytodo.data.TodoItem;
 import org.weibeld.mytodo.util.MyDate;
 import org.weibeld.mytodo.util.MyListActivity;
 import org.weibeld.mytodo.util.Util;
 
 import java.util.ArrayList;
 import java.util.Collections;
-
-import nl.qbusict.cupboard.QueryResultIterable;
-
-import static nl.qbusict.cupboard.CupboardFactory.cupboard;
 
 /**
  * Activity displaying a list of all the "done" todo items.
@@ -50,9 +44,12 @@ public class ArchiveActivity extends MyListActivity<DoneItem> {
         mDb = (new TodoDatabaseHelper(this)).getWritableDatabase();
 
         mListView = (ListView) findViewById(R.id.lvDoneItems);
-        readItems();
+        mItems = Util.readItemsFromDb(mActivity);
         mAdapter = new DoneItemAdapter(this, mItems);
         mListView.setAdapter(mAdapter);
+
+        // Reverse the list so that the newest DoneItems are at the top (beginning) of the list
+        Collections.reverse(mItems);
 
         // Set up contextual action mode (when selecting multiple items)
         mListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
@@ -83,15 +80,8 @@ public class ArchiveActivity extends MyListActivity<DoneItem> {
                         Util.confirmDeleteSelectedItems(getMyActivity(), mode);
                         return true;
                     case R.id.action_put_back:
-                        // Create TodoItems from the DoneItems and insert them in the TodoItem table
-                        ArrayList<DoneItem> doneItems = Util.getSelectedItems(getMyActivity());
-                        for (DoneItem doneItem : doneItems) {
-                            TodoItem todoItem = new TodoItem(doneItem);
-                            cupboard().withDatabase(mDb).put(todoItem);
-                        }
-                        Util.deleteSelectedItems(getMyActivity());
-                        mode.finish();
-                        Util.toast(getMyActivity(), getResources().getQuantityString(R.plurals.toast_done2todo, doneItems.size(), doneItems.size()));
+                        Util.moveSelectedItems(getMyActivity(), mode);
+                        return true;
                     default:
                         return false;
                 }
@@ -109,20 +99,6 @@ public class ArchiveActivity extends MyListActivity<DoneItem> {
                 return false;
             }
         });
-    }
-
-    // Initialise the 'mDoneItems' ArrayList with all the DoneItems in the database
-    private void readItems() {
-        mItems = new ArrayList<>();
-        Cursor cursor = cupboard().withDatabase(mDb).query(DoneItem.class).getCursor();
-        try {
-            QueryResultIterable<DoneItem> iter = cupboard().withCursor(cursor).iterate(DoneItem.class);
-            for (DoneItem item : iter) mItems.add(item);
-        } finally {
-            cursor.close();
-        }
-        // Reverse the list so that the newest DoneItems are at the top (beginning) of the list
-        Collections.reverse(mItems);
     }
 
     /**
