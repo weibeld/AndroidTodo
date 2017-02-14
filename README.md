@@ -1,10 +1,10 @@
 # Pre-work - *My Todo*
 
-**My Todo** is an android app that allows building a todo list and basic todo items management functionality including adding new items, editing and deleting an existing item.
+**My Todo** is an Android app that allows building a todo list and basic todo items management functionality including adding new items, editing and deleting an existing item.
 
 Submitted by: **Daniel Weibel**
 
-Time spent: **12** hours spent in total
+Time spent: :smiley: hours spent in total
 
 
 ## User Stories
@@ -29,8 +29,19 @@ The following **additional** features are implemented:
 * [x] Use a fragment for the input form which is used in both the MainActivity and EditActivity
 * [x] Replace the [ActionBar](https://developer.android.com/reference/android/app/ActionBar.html) by the more modern [Toolbar](https://developer.android.com/reference/android/support/v7/widget/Toolbar.html)
 * [x] Set up the EditActivity as a [full-screen dialog](https://material.io/guidelines/components/dialogs.html#dialogs-full-screen-dialogs)
-* [x] Allow selection of multiple ListView items (initiated by a long-click) and provide the action "Delete" in the [contextual action bar](https://developer.android.com/guide/topics/ui/menus.html#CAB) to delete the selected items
-* [x] Save the creation date of each item in the database
+* [x] Save the creation date along with the other data of each item
+* [x] Allow sorting the items according to several sort orders:
+    * [x] By creation date ascending
+    * [x] By creation date descending
+    * [x] Alphabetically
+    * [x] By priority
+    * [x] By due date
+* [x] Allow selection of multiple items ([contextual action mode](https://developer.android.com/guide/topics/ui/menus.html#CAB)) and provide the actions "Mark as Done" and "Delete" for the selected items
+* [x] Archiving of done items
+    * [x] Display all the items that have been marked as done in an additional activiy (ArchiveActiity) along with the date and time that they have been marked as done
+    * [x] Allow "putting back" done items from the archive to the todo list, and deleting them (through the contextual action mode)
+* [x] App published on Google Play (org.weibeld.mytodo)
+
 
 ## Video Walkthrough 
 
@@ -54,12 +65,11 @@ GIF created with [LiceCap](http://www.cockos.com/licecap/).
     - A priority and/or a due date may be selected for each item, but this is optional to provide more flexibility
     - Very long and multi-line items are supported
 - **Ideas for next steps:**
-    - Swipe ListView items in order to "mark as done"
-    - Additional activity that displays all the items that have been "marked as done"
-    - Provide actions in the app bar for sorting the items:
-        - By priority, then due date
-        - By due date, then priority
-        - By creation date
+    - Replace ListView in MainActivity and ArchiveActivity by [RecyclerView](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.html) and add suport for "swiping" individual items right and left to "mark as done" and "delete", respectively, in MainActivity, and "put back" and "delete", respectively, in ArchiveActivity
+        - Implement swiping items with [this library](https://github.com/daimajia/AndroidSwipeLayout)?
+        - RecyclerView does not support multiple selection (as in contextual action mode with ListView), but there is a workaround [here](https://bignerdranch.github.io/recyclerview-multiselect/)
+    - Add animations for adding, deleting, and sorting items (through the facilities of RecyclerView)
+    - Improve colour scheme and overall design of the app
 
 ## License
 
