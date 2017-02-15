@@ -40,18 +40,18 @@ The following **additional** features are implemented:
 * [x] Archiving of done items
     * [x] Display all the items that have been marked as done in an additional activiy (ArchiveActiity) along with the date and time that they have been marked as done
     * [x] Allow "putting back" done items from the archive to the todo list, and deleting them (through the contextual action mode)
-* [x] App published on Google Play (org.weibeld.mytodo)
+* [x] App published on Google Play ([My Todo](https://play.google.com/store/apps/details?id=org.weibeld.mytodo))
 
 
 ## Video Walkthrough 
 
 Here's a walkthrough of the implemented **optional/additional** user stories:
 
-![Video Walkthrough](walkthrough_master.gif)
+![Video Walkthrough](misc/walkthrough_master.gif)
 
 Here's a walkthrough of the implemented **required** user stories:
 
-![Video Walkthrough](walkthrough_required.gif)
+![Video Walkthrough](misc/walkthrough_required.gif)
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
