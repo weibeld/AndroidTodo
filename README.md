@@ -65,10 +65,12 @@ GIF created with [LiceCap](http://www.cockos.com/licecap/).
     - A priority and/or a due date may be selected for each item, but this is optional to provide more flexibility
     - Very long and multi-line items are supported
 - **Ideas for next steps:**
+    - Highlight overdue items in some way
     - Replace ListView in MainActivity and ArchiveActivity by [RecyclerView](https://developer.android.com/reference/android/support/v7/widget/RecyclerView.html) and add suport for "swiping" individual items right and left to "mark as done" and "delete", respectively, in MainActivity, and "put back" and "delete", respectively, in ArchiveActivity
         - Implement swiping items with [this library](https://github.com/daimajia/AndroidSwipeLayout)?
         - RecyclerView does not support multiple selection (as in contextual action mode with ListView), but there is a workaround [here](https://bignerdranch.github.io/recyclerview-multiselect/)
     - Add animations for adding, deleting, and sorting items (through the facilities of RecyclerView)
+    - Add support for multiple todo lists
     - Improve colour scheme and overall design of the app
 
 ## License
